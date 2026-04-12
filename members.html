@@ -19,12 +19,15 @@
         <span class="tag">WTPPW</span>
         Squadron
       </a>
-      <ul class="nav-links">
+      <ul class="nav-links" id="nav-links">
         <li><a href="index.html">Home</a></li>
         <li><a href="members.html" class="active">Members</a></li>
         <li><a href="recruitment.html">Join Us</a></li>
         <li><a href="rules.html">Rules</a></li>
       </ul>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
@@ -217,6 +220,13 @@
             <li><a href="members.html#officers">Officers</a></li>
           </ul>
         </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="#discord">Discord Server</a></li>
+            <li><a href="#warthunder-clan">War Thunder Clan Page</a></li>
+          </ul>
+        </div>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2025 WTPPW Squadron. All rights reserved.</span>
@@ -225,5 +235,14 @@
     </div>
   </footer>
 
+  <script>
+    var btn = document.getElementById('nav-toggle');
+    var menu = document.getElementById('nav-links');
+    btn.addEventListener('click', function () {
+      var open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+    });
+  </script>
 </body>
 </html>

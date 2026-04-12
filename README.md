@@ -1,7 +1,7 @@
 # WTPPW-Website
 
 Static website for the **WTPPW** War Thunder squadron, hosted via GitHub Pages.
-
+[Premium Players Worldwide](https://RainbowCastle25.github.io/WTPPW-Website/)
 ## Pages
 
 | File | Description |

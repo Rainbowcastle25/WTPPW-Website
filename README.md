@@ -23,7 +23,7 @@ Static website for the **WTPPW** War Thunder squadron, hosted via GitHub Pages.
 
 The members page fetches the live squadron roster from the Discord bot at the URL configured in the `ppw-roster-api` meta tag in [members.html](members.html).
 
-The bot exposes `GET /api/squadron-members` and returns the current squadron list as JSON. If you move the bot API to a different public host, update that meta tag so GitHub Pages can reach it.
+The bot exposes `GET /api/squadron-members` and returns the current squadron list as JSON. The current public host is `https://ppw-api.ensignenterprises.com`. If you move the bot API to a different public host, update that meta tag so GitHub Pages can reach it.
 
 Rank badge classes used elsewhere on the site are:
 

@@ -19,12 +19,15 @@
         <span class="tag">WTPPW</span>
         Squadron
       </a>
-      <ul class="nav-links">
+      <ul class="nav-links" id="nav-links">
         <li><a href="index.html">Home</a></li>
         <li><a href="members.html">Members</a></li>
         <li><a href="recruitment.html" class="active">Join Us</a></li>
         <li><a href="rules.html">Rules</a></li>
       </ul>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
@@ -42,6 +45,10 @@
         Think you have what it takes? Review the requirements below, follow the
         application steps, and become a member of WTPPW.
       </p>
+      <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; margin-top: 1.5rem;">
+        <a href="#discord" class="btn btn-discord btn-sm">Join our Discord</a>
+        <span class="recruit-status recruit-open">Recruiting Open</span>
+      </div>
     </div>
   </div>
 
@@ -141,6 +148,7 @@
                 <strong>#introductions</strong> channel. Tell us your in-game name,
                 your main nation, and what BR you play.
               </p>
+              <a href="#discord" class="btn btn-discord btn-sm mt-2">Join Discord Server</a>
             </div>
           </li>
           <li>
@@ -282,6 +290,13 @@
             <li><a href="members.html#officers">Officers</a></li>
           </ul>
         </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="#discord">Discord Server</a></li>
+            <li><a href="#warthunder-clan">War Thunder Clan Page</a></li>
+          </ul>
+        </div>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2025 WTPPW Squadron. All rights reserved.</span>
@@ -290,5 +305,14 @@
     </div>
   </footer>
 
+  <script>
+    var btn = document.getElementById('nav-toggle');
+    var menu = document.getElementById('nav-links');
+    btn.addEventListener('click', function () {
+      var open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+    });
+  </script>
 </body>
 </html>

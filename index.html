@@ -19,12 +19,15 @@
         <span class="tag">WTPPW</span>
         Squadron
       </a>
-      <ul class="nav-links">
+      <ul class="nav-links" id="nav-links">
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="members.html">Members</a></li>
         <li><a href="recruitment.html">Join Us</a></li>
         <li><a href="rules.html">Rules</a></li>
       </ul>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
 
@@ -41,6 +44,7 @@
       </p>
       <div class="hero-actions">
         <a href="recruitment.html" class="btn btn-primary">Join the Squadron</a>
+        <a href="#discord" class="btn btn-discord">Join Discord</a>
         <a href="members.html" class="btn btn-outline">View Roster</a>
       </div>
     </div>
@@ -73,6 +77,51 @@
       </div>
     </div>
   </div>
+
+  <!-- ===== ANNOUNCEMENTS ===== -->
+  <section class="announcements">
+    <div class="container">
+      <div class="section-label">Latest</div>
+      <h2 class="section-heading">Announcements</h2>
+      <div class="divider"></div>
+
+      <div class="announcement-list">
+        <div class="announcement-card">
+          <div class="ann-date">
+            <span class="ann-month">Apr</span>
+            <span class="ann-day">12</span>
+          </div>
+          <div class="ann-body">
+            <div><span class="ann-tag ann-tag-new">New</span></div>
+            <h4>Recruiting is Open</h4>
+            <p>We are actively looking for new members across all battle ratings and nations. Check the <a href="recruitment.html">Join Us</a> page for requirements and how to apply.</p>
+          </div>
+        </div>
+        <div class="announcement-card">
+          <div class="ann-date">
+            <span class="ann-month">Apr</span>
+            <span class="ann-day">10</span>
+          </div>
+          <div class="ann-body">
+            <div><span class="ann-tag ann-tag-battle">Squadron</span></div>
+            <h4>Squadron Battle Tracker Online</h4>
+            <p>Our Discord bot is now live — officers can log squadron battle results, track W-L-D records, and view head-to-head stats against rival squadrons directly in Discord.</p>
+          </div>
+        </div>
+        <div class="announcement-card">
+          <div class="ann-date">
+            <span class="ann-month">Apr</span>
+            <span class="ann-day">07</span>
+          </div>
+          <div class="ann-body">
+            <div><span class="ann-tag ann-tag-info">Info</span></div>
+            <h4>Website Launched</h4>
+            <p>The official WTPPW squadron website is now live. Find everything you need about joining, our rules, and the current roster right here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ===== ABOUT ===== -->
   <section class="about">
@@ -242,6 +291,13 @@
             <li><a href="members.html#officers">Officers</a></li>
           </ul>
         </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="#discord">Discord Server</a></li>
+            <li><a href="#warthunder-clan">War Thunder Clan Page</a></li>
+          </ul>
+        </div>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2025 WTPPW Squadron. All rights reserved.</span>
@@ -250,5 +306,14 @@
     </div>
   </footer>
 
+  <script>
+    var btn = document.getElementById('nav-toggle');
+    var menu = document.getElementById('nav-links');
+    btn.addEventListener('click', function () {
+      var open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+    });
+  </script>
 </body>
 </html>

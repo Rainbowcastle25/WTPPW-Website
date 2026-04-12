@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <meta name="ppw-roster-api" content="https://ppw-api.local.ensignenterprises.com" />
 </head>
 <body>
 
@@ -44,8 +45,8 @@
       <div class="section-label">Roster</div>
       <h1>Squadron Members</h1>
       <p class="text-muted mt-2" style="max-width: 520px;">
-        Meet the pilots, tankers, and sailors that make up PPW. Our roster is
-        always growing — see below for current ranks and specialisations.
+        Meet the pilots, tankers, and sailors that make up PPW. The roster below is
+        pulled live from the Discord bot so the website always reflects the current squadron list.
       </p>
     </div>
   </div>
@@ -102,9 +103,16 @@
       <div class="alert alert-info" style="margin-bottom: 2rem;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;color:var(--color-accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span>
-          This roster is maintained manually. Members join via in-game squadron invitations after
-          completing the <a href="recruitment.html">recruitment process</a>.
+          This roster is fetched from the Discord bot. If the bot is offline, the table will show the last error returned by the API.
         </span>
+      </div>
+
+      <div class="roster-status card" id="roster-status" aria-live="polite">
+        <div>
+          <div class="roster-status-label">Roster Source</div>
+          <div class="roster-status-value" id="roster-source">Connecting to bot...</div>
+        </div>
+        <div class="roster-status-meta" id="roster-updated">Loading...</div>
       </div>
 
       <div class="members-table-wrap">
@@ -112,25 +120,17 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>In-Game Name</th>
-              <th>Rank</th>
-              <th>Primary Nation</th>
-              <th>Speciality</th>
-              <th>Status</th>
+              <th>Player</th>
+              <th>Personal clan rating</th>
+              <th>Activity</th>
+              <th>Role</th>
+              <th>Date of entry</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td class="text-muted">01</td>
-              <td><strong>Rainbowcastle25</strong></td>
-              <td><span class="rank-badge rank-commander">Commander</span></td>
-              <td><span class="nation-flag">🇬🇧</span> Great Britain</td>
-              <td>Ground / Air</td>
-              <td><span style="color: #4a7c30;">● Active</span></td>
-            </tr>
+          <tbody id="roster-body">
             <tr>
               <td class="text-muted" colspan="6" style="text-align:center; padding: 2rem; color: var(--color-text-muted); font-style: italic;">
-                More members coming soon — <a href="recruitment.html">apply to join!</a>
+                Loading live roster from the bot...
               </td>
             </tr>
           </tbody>
@@ -240,11 +240,113 @@
   <script>
     var btn = document.getElementById('nav-toggle');
     var menu = document.getElementById('nav-links');
+    var rosterStatus = document.getElementById('roster-status');
+    var rosterSource = document.getElementById('roster-source');
+    var rosterUpdated = document.getElementById('roster-updated');
+    var rosterBody = document.getElementById('roster-body') || document.querySelector('.members-table tbody');
+    var rosterApiMeta = document.querySelector('meta[name="ppw-roster-api"]');
+    var rosterApiBase = rosterApiMeta ? rosterApiMeta.content.replace(/\/+$/, '') : '';
+
     btn.addEventListener('click', function () {
       var open = menu.classList.toggle('open');
       btn.classList.toggle('open', open);
       btn.setAttribute('aria-expanded', open);
     });
+
+    function escapeText(value) {
+      return String(value == null || value === '' ? '—' : value);
+    }
+
+    function setStatus(text, detail, mode) {
+      rosterSource.textContent = text;
+      rosterUpdated.textContent = detail || '';
+      rosterStatus.setAttribute('data-state', mode || 'idle');
+    }
+
+    function renderError(message) {
+      rosterBody.innerHTML = '';
+      var row = document.createElement('tr');
+      var cell = document.createElement('td');
+      cell.colSpan = 6;
+      cell.className = 'text-muted';
+      cell.style.textAlign = 'center';
+      cell.style.padding = '2rem';
+      cell.textContent = message;
+      row.appendChild(cell);
+      rosterBody.appendChild(row);
+    }
+
+    function renderRoster(players) {
+      rosterBody.innerHTML = '';
+      if (!players.length) {
+        renderError('No squadron members were returned by the bot.');
+        return;
+      }
+
+      players.forEach(function (player, index) {
+        var row = document.createElement('tr');
+        var cells = [
+          String(index + 1).padStart(2, '0'),
+          player.name || 'Unknown',
+          player.personalClanRating == null ? '—' : player.personalClanRating.toLocaleString(),
+          player.activity == null ? '—' : player.activity.toLocaleString(),
+          player.role || '—',
+          player.dateOfEntry || '—'
+        ];
+
+        cells.forEach(function (value, cellIndex) {
+          var cell = document.createElement('td');
+          if (cellIndex === 0) {
+            cell.className = 'text-muted';
+          }
+          if (cellIndex === 1) {
+            var strong = document.createElement('strong');
+            strong.textContent = escapeText(value);
+            cell.appendChild(strong);
+          } else {
+            cell.textContent = escapeText(value);
+          }
+          row.appendChild(cell);
+        });
+
+        rosterBody.appendChild(row);
+      });
+    }
+
+    async function loadRoster() {
+      if (!rosterApiBase) {
+        setStatus('No API configured', 'Add the bot API URL to the meta tag in members.html.', 'error');
+        renderError('Roster API URL is not configured.');
+        return;
+      }
+
+      setStatus('Loading live roster', 'Requesting data from the Discord bot...', 'loading');
+
+      var url = new URL('/api/squadron-members', rosterApiBase);
+      url.searchParams.set('name', 'Premium Players Worldwide');
+
+      try {
+        var response = await fetch(url.toString(), { mode: 'cors' });
+        var payload = await response.json();
+
+        if (!response.ok || payload.ok === false) {
+          throw new Error(payload.error || ('API request failed with status ' + response.status));
+        }
+
+        renderRoster(Array.isArray(payload.players) ? payload.players : []);
+        setStatus(
+          payload.squadronName || 'Premium Players Worldwide',
+          'Last updated ' + new Date(payload.fetchedAt).toLocaleString(),
+          'ready'
+        );
+      } catch (error) {
+        console.error('Failed to load PPW roster:', error);
+        setStatus('Roster unavailable', error.message || 'The bot could not be reached.', 'error');
+        renderError(error.message || 'The bot could not be reached.');
+      }
+    }
+
+    loadRoster();
   </script>
 </body>
 </html>

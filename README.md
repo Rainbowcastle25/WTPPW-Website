@@ -19,9 +19,13 @@ Static website for the **WTPPW** War Thunder squadron, hosted via GitHub Pages.
 3. Choose the `main` branch and `/ (root)` folder.
 4. Click **Save**. Your site will be live at `https://RainbowCastle25.github.io/WTPPW-Website/`.
 
-## Updating the Roster
+## Live Roster
 
-Edit `members.html` and add rows to the `<tbody>` of the members table. Use the existing row for `Rainbowcastle25` as a template. Rank badge classes are:
+The members page fetches the live squadron roster from the Discord bot at the URL configured in the `ppw-roster-api` meta tag in [members.html](members.html).
+
+The bot exposes `GET /api/squadron-members` and returns the current squadron list as JSON. If you move the bot API to a different public host, update that meta tag so GitHub Pages can reach it.
+
+Rank badge classes used elsewhere on the site are:
 
 - `rank-commander` — Commander
 - `rank-officer` — Officer

@@ -17,7 +17,7 @@ Static website for the **WTPPW** War Thunder squadron, hosted via GitHub Pages.
 1. Go to **Settings → Pages** in this repository.
 2. Under *Source*, select **Deploy from a branch**.
 3. Choose the `main` branch and `/ (root)` folder.
-4. Click **Save**. Your site will be live at `https://<your-username>.github.io/WTPPW-Website/`.
+4. Click **Save**. Your site will be live at `https://RainbowCastle25.github.io/WTPPW-Website/`.
 
 ## Updating the Roster
 

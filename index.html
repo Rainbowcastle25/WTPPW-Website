@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
 </head>
 <body>
 
@@ -123,6 +124,50 @@
             <h4>Website Launched</h4>
             <p>The official Premium Players Worldwide website is now live. Find everything you need about joining, our rules, and the current roster right here.</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BATTLE LOG ===== -->
+  <section class="battle-log-section">
+    <div class="container">
+      <div class="section-label">Replay Archive</div>
+      <h2 class="section-heading">Recent Squadron Battles</h2>
+      <div class="divider"></div>
+      <p class="section-intro">
+        The Discord bot imports War Thunder replay summaries and publishes the latest recorded matches here automatically.
+      </p>
+
+      <div class="battle-log-summary" id="battle-log-summary" aria-live="polite">
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Total Matches</span>
+          <strong class="battle-log-stat-value" data-battle-stat="total">Loading...</strong>
+        </div>
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Left Wins</span>
+          <strong class="battle-log-stat-value" data-battle-stat="left">—</strong>
+        </div>
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Right Wins</span>
+          <strong class="battle-log-stat-value" data-battle-stat="right">—</strong>
+        </div>
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Ties</span>
+          <strong class="battle-log-stat-value" data-battle-stat="ties">—</strong>
+        </div>
+      </div>
+
+      <div class="battle-log-panel card" id="battle-log-panel" aria-live="polite">
+        <div class="battle-log-panel-head">
+          <div>
+            <div class="battle-log-kicker">Live from the bot archive</div>
+            <h3>Latest Recorded Matches</h3>
+          </div>
+          <div class="battle-log-status" id="battle-log-status">Connecting to match log...</div>
+        </div>
+        <div class="battle-log-list" id="battle-log-list">
+          <div class="battle-log-empty">Loading recent battle log entries...</div>
         </div>
       </div>
     </div>
@@ -314,11 +359,167 @@
   <script>
     var btn = document.getElementById('nav-toggle');
     var menu = document.getElementById('nav-links');
+    var apiBaseMeta = document.querySelector('meta[name="ppw-api-base"]');
+    var apiBase = apiBaseMeta ? apiBaseMeta.content.replace(/\/+$/, '') : '';
+    var battleLogStatus = document.getElementById('battle-log-status');
+    var battleLogList = document.getElementById('battle-log-list');
     btn.addEventListener('click', function () {
       var open = menu.classList.toggle('open');
       btn.classList.toggle('open', open);
       btn.setAttribute('aria-expanded', open);
     });
+
+    function escapeText(value) {
+      return String(value == null || value === '' ? '—' : value);
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return 'Unknown date';
+      }
+
+      var date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(date);
+    }
+
+    function formatResult(replay) {
+      if (!replay) {
+        return 'Unknown result';
+      }
+
+      if (replay.winnerSide === 'tie') {
+        return 'Tie';
+      }
+
+      if (replay.winnerSide === 'left') {
+        return replay.leftLabel || 'Left side';
+      }
+
+      if (replay.winnerSide === 'right') {
+        return replay.rightLabel || 'Right side';
+      }
+
+      return replay.resultText || 'Unknown result';
+    }
+
+    function buildScoreLabel(replay) {
+      if (!replay) {
+        return '0 - 0';
+      }
+
+      return escapeText(replay.leftScore) + ' - ' + escapeText(replay.rightScore);
+    }
+
+    function setBattleStat(name, value) {
+      var node = document.querySelector('[data-battle-stat="' + name + '"]');
+      if (node) {
+        node.textContent = value;
+      }
+    }
+
+    function setBattleLogStatus(message, state) {
+      if (!battleLogStatus) {
+        return;
+      }
+
+      battleLogStatus.textContent = message;
+      battleLogStatus.dataset.state = state || 'idle';
+    }
+
+    function renderBattleLog(replays) {
+      if (!battleLogList) {
+        return;
+      }
+
+      if (!Array.isArray(replays) || replays.length === 0) {
+        battleLogList.innerHTML = '<div class="battle-log-empty">No battle records have been imported yet.</div>';
+        return;
+      }
+
+      var html = replays.map(function (replay) {
+        var resultClass = replay.winnerSide === 'left' ? 'win' : replay.winnerSide === 'right' ? 'loss' : 'tie';
+        var battleDate = formatDate(replay.battleDate || replay.importedAt);
+        var importedAt = replay.importedAt ? formatDate(replay.importedAt) : 'Unknown import time';
+
+        return [
+          '<article class="battle-log-item battle-log-' + resultClass + '">',
+            '<div class="battle-log-item-top">',
+              '<div>',
+                '<div class="battle-log-map">' + escapeText(replay.mapName) + '</div>',
+                '<div class="battle-log-date">' + battleDate + '</div>',
+              '</div>',
+              '<div class="battle-log-result">' + escapeText(formatResult(replay)) + '</div>',
+            '</div>',
+            '<div class="battle-log-score">' + buildScoreLabel(replay) + '</div>',
+            '<div class="battle-log-meta">',
+              '<span>' + escapeText(replay.playerCount || 0) + ' players</span>',
+              '<span>Imported ' + importedAt + '</span>',
+            '</div>',
+            '<p class="battle-log-note">' + escapeText(replay.resultText || 'Replay summary imported from the bot archive.') + '</p>',
+          '</article>'
+        ].join('');
+      }).join('');
+
+      battleLogList.innerHTML = html;
+    }
+
+    async function loadBattleLog() {
+      if (!apiBase || !battleLogList) {
+        return;
+      }
+
+      var controller = new AbortController();
+      var timeout = setTimeout(function () {
+        controller.abort();
+      }, 8000);
+
+      try {
+        setBattleLogStatus('Loading latest matches...', 'loading');
+        var response = await fetch(apiBase + '/api/squadron-battle-log?limit=6', {
+          signal: controller.signal,
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+
+        var data = await response.json();
+        var totals = data.totals || {};
+
+        setBattleStat('total', escapeText(totals.totalReplays || 0));
+        setBattleStat('left', escapeText(totals.leftWins || 0));
+        setBattleStat('right', escapeText(totals.rightWins || 0));
+        setBattleStat('ties', escapeText(totals.ties || 0));
+
+        renderBattleLog(data.recentReplays || []);
+
+        var lastImport = totals.lastImport ? formatDate(totals.lastImport) : 'n/a';
+        setBattleLogStatus('Last sync: ' + lastImport, 'ready');
+      } catch (error) {
+        console.error('[Battle Log] Failed to load archive:', error);
+        setBattleLogStatus('Unable to load live battle log', 'error');
+        if (battleLogList) {
+          battleLogList.innerHTML = '<div class="battle-log-empty">The bot is offline or the match log endpoint is unavailable right now.</div>';
+        }
+        setBattleStat('total', '—');
+        setBattleStat('left', '—');
+        setBattleStat('right', '—');
+        setBattleStat('ties', '—');
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    loadBattleLog();
   </script>
 </body>
 </html>

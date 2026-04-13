@@ -419,6 +419,186 @@ section {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* ---------- Battle Log ---------- */
+.battle-log-section {
+  background:
+    radial-gradient(circle at top left, rgba(255, 184, 0, 0.08), transparent 30%),
+    linear-gradient(180deg, #070707 0%, var(--color-surface) 100%);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.battle-log-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.battle-log-stat {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.95), rgba(13, 13, 13, 0.98));
+}
+
+.battle-log-stat-label {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.battle-log-stat-value {
+  display: block;
+  margin-top: 0.65rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+
+.battle-log-panel {
+  border-color: rgba(255, 184, 0, 0.18);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+}
+
+.battle-log-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.battle-log-kicker {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 0.35rem;
+}
+
+.battle-log-status {
+  flex-shrink: 0;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  background: rgba(255, 184, 0, 0.08);
+  border: 1px solid rgba(255, 184, 0, 0.2);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.8rem;
+}
+
+.battle-log-status[data-state="loading"] {
+  color: #ffd240;
+}
+
+.battle-log-status[data-state="ready"] {
+  color: #27ae60;
+  background: rgba(39, 174, 96, 0.08);
+  border-color: rgba(39, 174, 96, 0.24);
+}
+
+.battle-log-status[data-state="error"] {
+  color: #ff7d6d;
+  background: rgba(192, 57, 43, 0.08);
+  border-color: rgba(192, 57, 43, 0.24);
+}
+
+.battle-log-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.battle-log-item {
+  background: linear-gradient(180deg, rgba(13, 13, 13, 0.92), rgba(10, 10, 10, 0.98));
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-purple);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+}
+
+.battle-log-item.win {
+  border-left-color: var(--color-green);
+}
+
+.battle-log-item.loss {
+  border-left-color: var(--color-red);
+}
+
+.battle-log-item.tie {
+  border-left-color: var(--color-accent);
+}
+
+.battle-log-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.battle-log-map {
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+}
+
+.battle-log-date,
+.battle-log-meta,
+.battle-log-note {
+  color: var(--color-text-muted);
+}
+
+.battle-log-result {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  text-align: right;
+}
+
+.battle-log-score {
+  margin: 0.45rem 0 0.3rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  color: var(--color-accent);
+  letter-spacing: 0.12em;
+}
+
+.battle-log-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.battle-log-note {
+  margin-top: 0.55rem;
+  font-size: 0.92rem;
+}
+
+.battle-log-empty {
+  padding: 1.25rem;
+  border: 1px dashed rgba(255, 184, 0, 0.24);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  text-align: center;
+  background: rgba(255, 184, 0, 0.03);
+}
+
 /* ---------- Member Table ---------- */
 .members-table-wrap {
   overflow-x: auto;
@@ -515,6 +695,29 @@ section {
 .rank-officer   { color: #9B3BF2; border-color: #9B3BF2; background: rgba(155,59,242,0.10); }
 .rank-sergeant  { color: #27ae60; border-color: #27ae60; background: rgba(39,174,96,0.08); }
 .rank-private   { color: var(--color-text-muted); border-color: var(--color-border); background: transparent; }
+
+@media (max-width: 900px) {
+  .battle-log-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .battle-log-panel-head,
+  .battle-log-item-top,
+  .battle-log-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .battle-log-result {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .battle-log-summary {
+    grid-template-columns: 1fr;
+  }
+}
 
 .nation-flag {
   font-size: 1.2rem;

@@ -91,40 +91,8 @@
       <h2 class="section-heading">Announcements</h2>
       <div class="divider"></div>
 
-      <div class="announcement-list">
-        <div class="announcement-card">
-          <div class="ann-date">
-            <span class="ann-month">Apr</span>
-            <span class="ann-day">12</span>
-          </div>
-          <div class="ann-body">
-            <div><span class="ann-tag ann-tag-new">New</span></div>
-            <h4>Recruiting is Open</h4>
-            <p>We are actively looking for new members across all battle ratings and nations. Check the <a href="recruitment.html">Join Us</a> page for requirements and how to apply.</p>
-          </div>
-        </div>
-        <div class="announcement-card">
-          <div class="ann-date">
-            <span class="ann-month">Apr</span>
-            <span class="ann-day">10</span>
-          </div>
-          <div class="ann-body">
-            <div><span class="ann-tag ann-tag-battle">Squadron</span></div>
-            <h4>Squadron Battle Tracker Online</h4>
-            <p>Our Discord bot is now live — officers can log squadron battle results, track W-L-D records, and view head-to-head stats against rival squadrons directly in Discord.</p>
-          </div>
-        </div>
-        <div class="announcement-card">
-          <div class="ann-date">
-            <span class="ann-month">Apr</span>
-            <span class="ann-day">07</span>
-          </div>
-          <div class="ann-body">
-            <div><span class="ann-tag ann-tag-info">Info</span></div>
-            <h4>Website Launched</h4>
-            <p>The official Premium Players Worldwide website is now live. Find everything you need about joining, our rules, and the current roster right here.</p>
-          </div>
-        </div>
+      <div class="announcement-list" id="announcement-list" aria-live="polite">
+        <div class="announcement-empty">Loading announcements from Discord...</div>
       </div>
     </div>
   </section>
@@ -138,38 +106,6 @@
       <p class="section-intro">
         The Discord bot imports War Thunder replay summaries and publishes the latest recorded matches here automatically.
       </p>
-
-      <div class="battle-log-summary" id="battle-log-summary" aria-live="polite">
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Total Matches</span>
-          <strong class="battle-log-stat-value" data-battle-stat="total">Loading...</strong>
-        </div>
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Left Wins</span>
-          <strong class="battle-log-stat-value" data-battle-stat="left">—</strong>
-        </div>
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Right Wins</span>
-          <strong class="battle-log-stat-value" data-battle-stat="right">—</strong>
-        </div>
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Ties</span>
-          <strong class="battle-log-stat-value" data-battle-stat="ties">—</strong>
-        </div>
-      </div>
-
-      <div class="battle-log-panel card" id="battle-log-panel" aria-live="polite">
-        <div class="battle-log-panel-head">
-          <div>
-            <div class="battle-log-kicker">Live from the bot archive</div>
-            <h3>Latest Recorded Matches</h3>
-          </div>
-          <div class="battle-log-status" id="battle-log-status">Connecting to match log...</div>
-        </div>
-        <div class="battle-log-list" id="battle-log-list">
-          <div class="battle-log-empty">Loading recent battle log entries...</div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -361,6 +297,7 @@
     var menu = document.getElementById('nav-links');
     var apiBaseMeta = document.querySelector('meta[name="ppw-api-base"]');
     var apiBase = apiBaseMeta ? apiBaseMeta.content.replace(/\/+$/, '') : '';
+    var announcementList = document.getElementById('announcement-list');
     var battleLogStatus = document.getElementById('battle-log-status');
     var battleLogList = document.getElementById('battle-log-list');
     btn.addEventListener('click', function () {
@@ -416,6 +353,92 @@
       }
 
       return escapeText(replay.leftScore) + ' - ' + escapeText(replay.rightScore);
+    }
+
+    function formatAnnouncementDate(value) {
+      var date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return { month: 'Now', day: '—' };
+      }
+
+      return {
+        month: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date),
+        day: new Intl.DateTimeFormat('en-US', { day: '2-digit' }).format(date)
+      };
+    }
+
+    function escapeAttribute(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function pickAnnouncementTag(announcement, index) {
+      if (index === 0) {
+        return { text: 'Latest', className: 'ann-tag-new' };
+      }
+
+      if (announcement.summary) {
+        return { text: 'Discord', className: 'ann-tag-info' };
+      }
+
+      return { text: 'Update', className: 'ann-tag-battle' };
+    }
+
+    function renderAnnouncements(announcements) {
+      if (!announcementList) {
+        return;
+      }
+
+      if (!Array.isArray(announcements) || announcements.length === 0) {
+        announcementList.innerHTML = '<div class="announcement-empty">No announcements were found in the Discord channel yet.</div>';
+        return;
+      }
+
+      var html = announcements.map(function (announcement, index) {
+        var date = formatAnnouncementDate(announcement.timestamp);
+        var tag = pickAnnouncementTag(announcement, index);
+
+        return [
+          '<article class="announcement-card">',
+            '<div class="ann-date">',
+              '<span class="ann-month">' + escapeText(date.month) + '</span>',
+              '<span class="ann-day">' + escapeText(date.day) + '</span>',
+            '</div>',
+            '<div class="ann-body">',
+              '<div><span class="ann-tag ' + tag.className + '">' + escapeText(tag.text) + '</span></div>',
+              '<h4><a href="' + escapeAttribute(announcement.url) + '" target="_blank" rel="noopener noreferrer">' + escapeText(announcement.header) + '</a></h4>',
+              '<p class="ann-meta"><a href="' + escapeAttribute(announcement.url) + '" target="_blank" rel="noopener noreferrer">Open in Discord</a></p>',
+            '</div>',
+          '</article>'
+        ].join('');
+      }).join('');
+
+      announcementList.innerHTML = html;
+    }
+
+    async function loadAnnouncements() {
+      if (!apiBase || !announcementList) {
+        return;
+      }
+
+      try {
+        var response = await fetch(apiBase + '/api/announcements?limit=3', {
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+
+        var data = await response.json();
+        renderAnnouncements(data.announcements || []);
+      } catch (error) {
+        console.error('[Announcements] Failed to load Discord announcements:', error);
+        announcementList.innerHTML = '<div class="announcement-empty">Announcements are unavailable right now. Check the Discord announcements channel directly.</div>';
+      }
     }
 
     function setBattleStat(name, value) {
@@ -520,6 +543,7 @@
     }
 
     loadBattleLog();
+    loadAnnouncements();
   </script>
 </body>
 </html>

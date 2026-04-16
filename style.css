@@ -599,11 +599,217 @@ section {
   background: rgba(255, 184, 0, 0.03);
 }
 
+/* ---------- Announcements ---------- */
+.announcements {
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background:
+    radial-gradient(circle at top right, rgba(139, 43, 226, 0.10), transparent 34%),
+    linear-gradient(180deg, #090909 0%, var(--color-surface) 100%);
+}
+
+.announcement-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.announcement-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.15rem 1.25rem;
+  background: linear-gradient(180deg, rgba(13, 13, 13, 0.96), rgba(10, 10, 10, 0.98));
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-purple);
+  border-radius: var(--radius);
+}
+
+.announcement-card:hover {
+  border-color: var(--color-purple);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 16px var(--color-purple-glow);
+}
+
+.ann-date {
+  width: 64px;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border: 1px solid rgba(255, 184, 0, 0.18);
+  border-radius: 3px;
+  background: rgba(255, 184, 0, 0.05);
+  color: var(--color-accent);
+}
+
+.ann-month,
+.ann-day {
+  display: block;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+.ann-month {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.ann-day {
+  font-size: 1.25rem;
+}
+
+.ann-body h4 {
+  margin: 0.35rem 0 0.45rem;
+  font-size: 1rem;
+}
+
+.ann-body h4 a {
+  color: var(--color-heading);
+}
+
+.ann-body h4 a:hover {
+  color: var(--color-accent);
+}
+
+.ann-body p {
+  margin-bottom: 0.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.ann-meta {
+  font-size: 0.8rem !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.announcement-empty {
+  padding: 1.25rem;
+  border: 1px dashed rgba(255, 184, 0, 0.24);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  text-align: center;
+  background: rgba(255, 184, 0, 0.03);
+}
+
 /* ---------- Member Table ---------- */
 .members-table-wrap {
   overflow-x: auto;
   border-radius: var(--radius);
   border: 1px solid var(--color-border);
+}
+
+.roster-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.roster-summary-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.96), rgba(13, 13, 13, 0.98));
+}
+
+.roster-summary-label {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.roster-summary-value {
+  margin-top: 0.45rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+
+.roster-summary-meta {
+  margin-top: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.roster-toolbar {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr)) auto;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1.25rem;
+}
+
+.roster-toolbar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.roster-toolbar-field label {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.roster-toolbar-actions {
+  min-width: 180px;
+}
+
+.roster-toolbar-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.roster-control {
+  width: 100%;
+  min-height: 42px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  padding: 0.55rem 0.8rem;
+}
+
+.roster-control:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(255, 184, 0, 0.12);
+}
+
+input.roster-control {
+  appearance: none;
+}
+
+select.roster-control {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%), linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+
+.roster-direction-button {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.roster-direction-button[aria-pressed="true"] {
+  background: rgba(255, 184, 0, 0.12);
 }
 
 .members-table {
@@ -635,6 +841,10 @@ section {
 
 .members-table tr:hover td {
   background: rgba(139, 43, 226, 0.06);
+}
+
+.members-table td strong {
+  color: var(--color-heading);
 }
 
 .roster-status {
@@ -701,6 +911,14 @@ section {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .roster-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roster-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .battle-log-panel-head,
   .battle-log-item-top,
   .battle-log-meta {
@@ -716,6 +934,15 @@ section {
 @media (max-width: 640px) {
   .battle-log-summary {
     grid-template-columns: 1fr;
+  }
+
+  .roster-summary-grid,
+  .roster-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-toolbar-actions {
+    min-width: 0;
   }
 }
 
@@ -957,90 +1184,6 @@ section {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.35; }
 }
-
-/* ---------- Announcements ---------- */
-.announcements {
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface-2);
-}
-
-.announcement-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.announcement-card {
-  display: flex;
-  gap: 1.25rem;
-  align-items: flex-start;
-  padding: 1.1rem 1.25rem;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  transition: border-color var(--transition);
-}
-
-.announcement-card:hover {
-  border-color: var(--color-purple);
-  box-shadow: 0 2px 16px var(--color-purple-glow);
-}
-
-.ann-date {
-  flex-shrink: 0;
-  text-align: center;
-  background: rgba(139, 43, 226, 0.08);
-  border: 1px solid rgba(139, 43, 226, 0.3);
-  border-radius: var(--radius);
-  padding: 0.4rem 0.65rem;
-  min-width: 52px;
-}
-
-.ann-month {
-  display: block;
-  font-family: var(--font-heading);
-  font-size: 0.6rem;
-  color: var(--color-purple);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
-.ann-day {
-  display: block;
-  font-family: var(--font-heading);
-  font-size: 1.35rem;
-  color: var(--color-heading);
-  line-height: 1.1;
-}
-
-.ann-body h4 {
-  font-size: 0.92rem;
-  color: var(--color-heading);
-  margin-bottom: 0.2rem;
-}
-
-.ann-body p {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-.ann-tag {
-  display: inline-block;
-  font-family: var(--font-heading);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 0.1rem 0.45rem;
-  border-radius: 2px;
-  margin-bottom: 0.3rem;
-  border: 1px solid;
-}
-
-.ann-tag-new     { color: var(--color-accent);   border-color: rgba(255,184,0,0.4);   background: rgba(255,184,0,0.08); }
-.ann-tag-battle  { color: var(--color-purple);   border-color: rgba(139,43,226,0.4);  background: rgba(139,43,226,0.08); }
-.ann-tag-info    { color: var(--color-text-muted); border-color: var(--color-border); background: transparent; }
 
 /* ---------- Hamburger Menu ---------- */
 .nav-hamburger {

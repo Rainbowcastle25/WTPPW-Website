@@ -107,6 +107,64 @@
         </span>
       </div>
 
+      <div class="roster-summary-grid">
+        <div class="card roster-summary-card">
+          <div class="roster-summary-label">Total members</div>
+          <div class="roster-summary-value" id="roster-total-members">0</div>
+          <div class="roster-summary-meta" id="roster-total-meta">Waiting for roster data...</div>
+        </div>
+        <div class="card roster-summary-card">
+          <div class="roster-summary-label">Visible members</div>
+          <div class="roster-summary-value" id="roster-visible-members">0</div>
+          <div class="roster-summary-meta" id="roster-visible-meta">Use search and filters to narrow the list.</div>
+        </div>
+        <div class="card roster-summary-card">
+          <div class="roster-summary-label">Average activity</div>
+          <div class="roster-summary-value" id="roster-average-activity">0</div>
+          <div class="roster-summary-meta" id="roster-average-meta">Calculated from the live roster.</div>
+        </div>
+        <div class="card roster-summary-card">
+          <div class="roster-summary-label">Top rating</div>
+          <div class="roster-summary-value" id="roster-top-rating">0</div>
+          <div class="roster-summary-meta" id="roster-top-meta">Highest personal clan rating in the roster.</div>
+        </div>
+      </div>
+
+      <div class="card roster-toolbar" aria-label="Roster controls">
+        <div class="roster-toolbar-field roster-toolbar-search">
+          <label for="roster-search">Search member</label>
+          <input id="roster-search" class="roster-control" type="search" placeholder="Search by player name" autocomplete="off" />
+        </div>
+        <div class="roster-toolbar-field">
+          <label for="roster-role-filter">Role</label>
+          <select id="roster-role-filter" class="roster-control">
+            <option value="all">All roles</option>
+          </select>
+        </div>
+        <div class="roster-toolbar-field">
+          <label for="roster-sort">Sort by</label>
+          <select id="roster-sort" class="roster-control">
+            <option value="rank">Roster position</option>
+            <option value="name">Player name</option>
+            <option value="activity">Activity</option>
+            <option value="personalClanRating">Personal clan rating</option>
+            <option value="role">Role</option>
+            <option value="dateOfEntry">Date of entry</option>
+          </select>
+        </div>
+        <div class="roster-toolbar-field roster-toolbar-direction">
+          <label>Direction</label>
+          <button class="btn btn-outline btn-sm roster-control roster-direction-button" id="roster-sort-direction" type="button" aria-pressed="false">Ascending</button>
+        </div>
+        <div class="roster-toolbar-field roster-toolbar-actions">
+          <label>Actions</label>
+          <div class="roster-toolbar-buttons">
+            <button class="btn btn-outline btn-sm roster-control" id="roster-refresh" type="button">Refresh</button>
+            <button class="btn btn-outline btn-sm roster-control" id="roster-reset" type="button">Reset</button>
+          </div>
+        </div>
+      </div>
+
       <div class="roster-status card" id="roster-status" aria-live="polite">
         <div>
           <div class="roster-status-label">Roster Source</div>
@@ -245,7 +303,34 @@
     var rosterUpdated = document.getElementById('roster-updated');
     var rosterBody = document.getElementById('roster-body') || document.querySelector('.members-table tbody');
     var rosterApiMeta = document.querySelector('meta[name="ppw-roster-api"]');
+    var rosterSearch = document.getElementById('roster-search');
+    var rosterRoleFilter = document.getElementById('roster-role-filter');
+    var rosterSort = document.getElementById('roster-sort');
+    var rosterSortDirection = document.getElementById('roster-sort-direction');
+    var rosterRefresh = document.getElementById('roster-refresh');
+    var rosterReset = document.getElementById('roster-reset');
+    var rosterTotalMembers = document.getElementById('roster-total-members');
+    var rosterTotalMeta = document.getElementById('roster-total-meta');
+    var rosterVisibleMembers = document.getElementById('roster-visible-members');
+    var rosterVisibleMeta = document.getElementById('roster-visible-meta');
+    var rosterAverageActivity = document.getElementById('roster-average-activity');
+    var rosterAverageMeta = document.getElementById('roster-average-meta');
+    var rosterTopRating = document.getElementById('roster-top-rating');
+    var rosterTopMeta = document.getElementById('roster-top-meta');
     var rosterApiBase = rosterApiMeta ? rosterApiMeta.content.replace(/\/+$/, '') : '';
+    var rosterMembers = [];
+    var rosterState = {
+      query: '',
+      role: 'all',
+      sortField: 'rank',
+      sortDirection: 'asc'
+    };
+    var rolePriority = {
+      Commander: 0,
+      Officer: 1,
+      Sergeant: 2,
+      Private: 3
+    };
 
     btn.addEventListener('click', function () {
       var open = menu.classList.toggle('open');
@@ -253,17 +338,215 @@
       btn.setAttribute('aria-expanded', open);
     });
 
+    rosterSearch.addEventListener('input', function () {
+      rosterState.query = rosterSearch.value.trim().toLowerCase();
+      renderRosterView();
+    });
+
+    rosterRoleFilter.addEventListener('change', function () {
+      rosterState.role = rosterRoleFilter.value;
+      renderRosterView();
+    });
+
+    rosterSort.addEventListener('change', function () {
+      rosterState.sortField = rosterSort.value;
+      renderRosterView();
+    });
+
+    rosterSortDirection.addEventListener('click', function () {
+      rosterState.sortDirection = rosterState.sortDirection === 'asc' ? 'desc' : 'asc';
+      updateDirectionButton();
+      renderRosterView();
+    });
+
+    rosterRefresh.addEventListener('click', function () {
+      loadRoster();
+    });
+
+    rosterReset.addEventListener('click', function () {
+      rosterState.query = '';
+      rosterState.role = 'all';
+      rosterState.sortField = 'rank';
+      rosterState.sortDirection = 'asc';
+      rosterSearch.value = '';
+      rosterRoleFilter.value = 'all';
+      rosterSort.value = 'rank';
+      updateDirectionButton();
+      renderRosterView();
+    });
+
     function escapeText(value) {
       return String(value == null || value === '' ? '—' : value);
     }
 
-    function setStatus(text, detail, mode) {
-      rosterSource.textContent = text;
-      rosterUpdated.textContent = detail || '';
-      rosterStatus.setAttribute('data-state', mode || 'idle');
+    function parseDateOfEntry(value) {
+      if (!value) {
+        return null;
+      }
+
+      var parts = String(value).split('.');
+      if (parts.length === 3) {
+        var day = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10) - 1;
+        var year = parseInt(parts[2], 10);
+        var parsed = new Date(year, month, day);
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+
+      var fallback = new Date(value);
+      return Number.isNaN(fallback.getTime()) ? null : fallback;
     }
 
-    function renderError(message) {
+    function formatNumber(value) {
+      return value == null || Number.isNaN(value) ? '—' : Number(value).toLocaleString();
+    }
+
+    function formatAverage(value) {
+      return value == null || Number.isNaN(value) ? '—' : Math.round(value).toLocaleString();
+    }
+
+    function normalizePlayer(player, index) {
+      var name = escapeText(player.name);
+      var role = escapeText(player.role);
+      var joined = parseDateOfEntry(player.dateOfEntry);
+
+      return {
+        sourceIndex: index,
+        rank: player.rank == null ? null : Number(player.rank),
+        name: name,
+        nameLower: name.toLowerCase(),
+        personalClanRating: player.personalClanRating == null ? null : Number(player.personalClanRating),
+        activity: player.activity == null ? null : Number(player.activity),
+        role: role,
+        roleLower: role.toLowerCase(),
+        dateOfEntry: escapeText(player.dateOfEntry),
+        joinedAt: joined,
+        joinedTime: joined ? joined.getTime() : null
+      };
+    }
+
+    function updateDirectionButton() {
+      var isAscending = rosterState.sortDirection === 'asc';
+      rosterSortDirection.textContent = isAscending ? 'Ascending' : 'Descending';
+      rosterSortDirection.setAttribute('aria-pressed', String(!isAscending));
+    }
+
+    function compareValues(left, right, nullsLast) {
+      var leftMissing = left == null || Number.isNaN(left);
+      var rightMissing = right == null || Number.isNaN(right);
+
+      if (leftMissing && rightMissing) {
+        return 0;
+      }
+      if (leftMissing) {
+        return nullsLast ? 1 : -1;
+      }
+      if (rightMissing) {
+        return nullsLast ? -1 : 1;
+      }
+
+      if (left < right) {
+        return -1;
+      }
+      if (left > right) {
+        return 1;
+      }
+      return 0;
+    }
+
+    function compareRole(left, right) {
+      var leftPriority = rolePriority[left] == null ? 99 : rolePriority[left];
+      var rightPriority = rolePriority[right] == null ? 99 : rolePriority[right];
+
+      if (leftPriority < rightPriority) {
+        return -1;
+      }
+      if (leftPriority > rightPriority) {
+        return 1;
+      }
+      return left.localeCompare(right);
+    }
+
+    function sortPlayers(players) {
+      var sorted = players.slice();
+      var direction = rosterState.sortDirection === 'desc' ? -1 : 1;
+
+      sorted.sort(function (left, right) {
+        var result = 0;
+
+        if (rosterState.sortField === 'rank') {
+          result = compareValues(left.rank, right.rank, true) || compareValues(left.sourceIndex, right.sourceIndex, true);
+        } else if (rosterState.sortField === 'name') {
+          result = left.name.localeCompare(right.name) || compareValues(left.sourceIndex, right.sourceIndex, true);
+        } else if (rosterState.sortField === 'activity') {
+          result = compareValues(left.activity, right.activity, false) || left.name.localeCompare(right.name);
+        } else if (rosterState.sortField === 'personalClanRating') {
+          result = compareValues(left.personalClanRating, right.personalClanRating, false) || left.name.localeCompare(right.name);
+        } else if (rosterState.sortField === 'role') {
+          result = compareRole(left.role, right.role) || left.name.localeCompare(right.name);
+        } else if (rosterState.sortField === 'dateOfEntry') {
+          result = compareValues(left.joinedTime, right.joinedTime, true) || left.name.localeCompare(right.name);
+        }
+
+        return result * direction;
+      });
+
+      return sorted;
+    }
+
+    function getRoleBadgeClass(role) {
+      var normalized = String(role || '').toLowerCase();
+
+      if (normalized === 'commander') {
+        return 'rank-commander';
+      }
+      if (normalized === 'officer') {
+        return 'rank-officer';
+      }
+      if (normalized === 'sergeant') {
+        return 'rank-sergeant';
+      }
+      if (normalized === 'private') {
+        return 'rank-private';
+      }
+      return '';
+    }
+
+    function setSummaryStats(allPlayers, visiblePlayers) {
+      var totalCount = allPlayers.length;
+      var visibleCount = visiblePlayers.length;
+      var totalActivity = 0;
+      var activityCount = 0;
+      var topRating = null;
+      var topRatingName = '—';
+
+      allPlayers.forEach(function (player) {
+        if (player.activity != null && !Number.isNaN(player.activity)) {
+          totalActivity += player.activity;
+          activityCount += 1;
+        }
+
+        if (player.personalClanRating != null && !Number.isNaN(player.personalClanRating)) {
+          if (topRating == null || player.personalClanRating > topRating) {
+            topRating = player.personalClanRating;
+            topRatingName = player.name;
+          }
+        }
+      });
+
+      rosterTotalMembers.textContent = String(totalCount);
+      rosterTotalMeta.textContent = totalCount === 1 ? 'One confirmed squadron member.' : 'Confirmed squadron members in the live roster.';
+      rosterVisibleMembers.textContent = String(visibleCount);
+      rosterVisibleMeta.textContent = visibleCount === totalCount ? 'All members are visible.' : 'Filtered by search, role, or sort settings.';
+      rosterAverageActivity.textContent = activityCount ? formatAverage(totalActivity / activityCount) : '—';
+      rosterAverageMeta.textContent = activityCount ? 'Average across members with activity data.' : 'No activity data returned yet.';
+      rosterTopRating.textContent = topRating == null ? '—' : topRating.toLocaleString();
+      rosterTopMeta.textContent = topRating == null ? 'No clan rating data returned.' : 'Top member: ' + topRatingName;
+    }
+
+    function renderEmptyState(message) {
       rosterBody.innerHTML = '';
       var row = document.createElement('tr');
       var cell = document.createElement('td');
@@ -276,10 +559,16 @@
       rosterBody.appendChild(row);
     }
 
+    function setStatus(text, detail, mode) {
+      rosterSource.textContent = text;
+      rosterUpdated.textContent = detail || '';
+      rosterStatus.setAttribute('data-state', mode || 'idle');
+    }
+
     function renderRoster(players) {
       rosterBody.innerHTML = '';
       if (!players.length) {
-        renderError('No squadron members were returned by the bot.');
+        renderEmptyState('No squadron members were returned by the bot.');
         return;
       }
 
@@ -287,11 +576,11 @@
         var row = document.createElement('tr');
         var cells = [
           String(index + 1).padStart(2, '0'),
-          player.name || 'Unknown',
-          player.personalClanRating == null ? '—' : player.personalClanRating.toLocaleString(),
-          player.activity == null ? '—' : player.activity.toLocaleString(),
-          player.role || '—',
-          player.dateOfEntry || '—'
+          player.name,
+          formatNumber(player.personalClanRating),
+          formatNumber(player.activity),
+          player.role,
+          player.dateOfEntry
         ];
 
         cells.forEach(function (value, cellIndex) {
@@ -301,10 +590,16 @@
           }
           if (cellIndex === 1) {
             var strong = document.createElement('strong');
-            strong.textContent = escapeText(value);
+            strong.textContent = value;
             cell.appendChild(strong);
+          } else if (cellIndex === 4) {
+            var badge = document.createElement('span');
+            var badgeClass = getRoleBadgeClass(value);
+            badge.className = 'rank-badge' + (badgeClass ? ' ' + badgeClass : '');
+            badge.textContent = value;
+            cell.appendChild(badge);
           } else {
-            cell.textContent = escapeText(value);
+            cell.textContent = value;
           }
           row.appendChild(cell);
         });
@@ -313,14 +608,43 @@
       });
     }
 
+    function renderRosterView() {
+      if (!rosterMembers.length) {
+        setSummaryStats([], []);
+        if (!rosterBody.querySelector('td[colspan="6"]')) {
+          renderEmptyState('Loading live roster from the bot...');
+        }
+        rosterUpdated.textContent = 'Loading...';
+        return;
+      }
+
+      var filteredPlayers = rosterMembers.filter(function (player) {
+        var matchesQuery = !rosterState.query || player.nameLower.indexOf(rosterState.query) !== -1;
+        var matchesRole = rosterState.role === 'all' || player.role === rosterState.role;
+        return matchesQuery && matchesRole;
+      });
+
+      var sortedPlayers = sortPlayers(filteredPlayers);
+      var sortLabel = rosterSort.options[rosterSort.selectedIndex] ? rosterSort.options[rosterSort.selectedIndex].text : rosterState.sortField;
+
+      setSummaryStats(rosterMembers, filteredPlayers);
+      renderRoster(sortedPlayers);
+      rosterUpdated.textContent = 'Showing ' + filteredPlayers.length + ' of ' + rosterMembers.length + ' members · Sorted by ' + sortLabel + ' ' + rosterState.sortDirection;
+
+      if (!sortedPlayers.length) {
+        renderEmptyState('No members matched the current search or filters.');
+      }
+    }
+
     async function loadRoster() {
       if (!rosterApiBase) {
         setStatus('No API configured', 'Add the bot API URL to the meta tag in members.html.', 'error');
-        renderError('Roster API URL is not configured.');
+        renderEmptyState('Roster API URL is not configured.');
         return;
       }
 
       setStatus('Loading live roster', 'Requesting data from the Discord bot...', 'loading');
+      rosterUpdated.textContent = 'Fetching live roster...';
 
       var url = new URL('/api/squadron-members', rosterApiBase);
       url.searchParams.set('name', 'Premium Players Worldwide');
@@ -333,19 +657,60 @@
           throw new Error(payload.error || ('API request failed with status ' + response.status));
         }
 
-        renderRoster(Array.isArray(payload.players) ? payload.players : []);
+        rosterMembers = Array.isArray(payload.players) ? payload.players.map(normalizePlayer) : [];
+        setRoleOptions(rosterMembers);
+        renderRosterView();
         setStatus(
           payload.squadronName || 'Premium Players Worldwide',
-          'Last updated ' + new Date(payload.fetchedAt).toLocaleString(),
+          'Last updated ' + new Date(payload.fetchedAt).toLocaleString() + ' · ' + rosterMembers.length + ' members loaded',
           'ready'
         );
       } catch (error) {
         console.error('Failed to load PPW roster:', error);
         setStatus('Roster unavailable', error.message || 'The bot could not be reached.', 'error');
-        renderError(error.message || 'The bot could not be reached.');
+        rosterMembers = [];
+        setSummaryStats([], []);
+        renderEmptyState(error.message || 'The bot could not be reached.');
+        rosterUpdated.textContent = error.message || 'The bot could not be reached.';
       }
     }
 
+    function setRoleOptions(players) {
+      var seen = [];
+
+      players.forEach(function (player) {
+        if (player.role && seen.indexOf(player.role) === -1) {
+          seen.push(player.role);
+        }
+      });
+
+      seen.sort(function (left, right) {
+        var leftPriority = rolePriority[left] == null ? 99 : rolePriority[left];
+        var rightPriority = rolePriority[right] == null ? 99 : rolePriority[right];
+
+        if (leftPriority !== rightPriority) {
+          return leftPriority - rightPriority;
+        }
+
+        return left.localeCompare(right);
+      });
+
+      var currentValue = rosterRoleFilter.value || 'all';
+      rosterRoleFilter.innerHTML = '<option value="all">All roles</option>';
+
+      seen.forEach(function (role) {
+        var option = document.createElement('option');
+        option.value = role;
+        option.textContent = role;
+        rosterRoleFilter.appendChild(option);
+      });
+
+      rosterRoleFilter.value = seen.indexOf(currentValue) !== -1 || currentValue === 'all' ? currentValue : 'all';
+      rosterState.role = rosterRoleFilter.value;
+    }
+
+    updateDirectionButton();
+    renderEmptyState('Loading live roster from the bot...');
     loadRoster();
   </script>
 </body>

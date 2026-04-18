@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Battle History &amp; Statistics — PPW Squadron</title>
+  <meta name="description" content="View our squadron battle history, search completed battles, and see player statistics." />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <style>
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: 2rem;
+    }
+
+    .tab-button {
+      padding: 1rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .tab-button:hover {
+      color: var(--color-text);
+    }
+
+    .tab-button.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input,
+    .filter-select {
+      padding: 0.75rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      border-radius: 4px;
+      font-family: inherit;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-select {
+      min-width: 150px;
+    }
+
+    .search-button {
+      padding: 0.75rem 1.5rem;
+      background: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .search-button:hover {
+      background: #ff6b35;
+    }
+
+    .battle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .battle-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: all 0.2s;
+    }
+
+    .battle-card:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+    }
+
+    .battle-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .battle-br {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .battle-date {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+    }
+
+    .battle-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status-completed {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4cb150;
+    }
+
+    .status-cancelled {
+      background: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+    }
+
+    .battle-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: var(--color-bg);
+      border-radius: 4px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .detail-label {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .player-list {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .player-list-title {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .player-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .player-tag {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: var(--color-bg);
+      border-radius: 3px;
+      font-size: 0.8rem;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .page-button {
+      padding: 0.5rem 1rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .page-button:hover {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .page-button.active {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .page-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+    }
+
+    .player-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--color-border);
+      transition: background 0.2s;
+    }
+
+    .player-stat-row:hover {
+      background: var(--color-bg);
+    }
+
+    .player-stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .player-name {
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    .player-rank {
+      color: var(--color-primary);
+      font-weight: 600;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .player-stats-columns {
+      display: flex;
+      gap: 2rem;
+      justify-content: flex-end;
+      flex: 1;
+    }
+
+    .stat-column {
+      text-align: center;
+      min-width: 100px;
+    }
+
+    .stat-column-label {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-column-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--color-text-muted);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--color-text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
+        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="members.html">Members</a></li>
+        <li><a href="battles.html" class="active">Battles</a></li>
+        <li><a href="recruitment.html">Join Us</a></li>
+        <li><a href="rules.html">Rules</a></li>
+      </ul>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <header class="hero" style="padding: 3rem 0;">
+    <div class="container">
+      <div class="section-label">Battle Records</div>
+      <h1 class="hero-title" style="margin: 0.5rem 0;">Battle History &amp; Stats</h1>
+      <p class="hero-subtitle" style="margin-top: 0.5rem;">Search our squadron battles and view player statistics</p>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <section style="padding: 2rem 0;">
+    <div class="container">
+      <div class="tabs">
+        <button class="tab-button active" data-tab="battles">Battle Log</button>
+        <button class="tab-button" data-tab="stats">Player Statistics</button>
+      </div>
+
+      <!-- ===== BATTLES TAB ===== -->
+      <div id="battles" class="tab-content active">
+        <div class="search-bar">
+          <input type="text" id="search-input" class="search-input" placeholder="Search by battle rating or notes..." />
+          <select id="br-filter" class="filter-select">
+            <option value="">All Battle Ratings</option>
+            <option value="5.0">5.0</option>
+            <option value="5.3">5.3</option>
+            <option value="5.7">5.7</option>
+            <option value="6.0">6.0</option>
+            <option value="6.3">6.3</option>
+            <option value="6.7">6.7</option>
+            <option value="7.0">7.0</option>
+            <option value="7.3">7.3</option>
+            <option value="7.7">7.7</option>
+            <option value="8.0">8.0</option>
+            <option value="8.3">8.3</option>
+            <option value="8.7">8.7</option>
+            <option value="9.0">9.0</option>
+            <option value="9.3">9.3</option>
+            <option value="9.7">9.7</option>
+            <option value="10.0">10.0</option>
+            <option value="10.3">10.3</option>
+            <option value="10.7">10.7</option>
+          </select>
+          <select id="status-filter" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button class="search-button" id="search-button">Search</button>
+        </div>
+
+        <div id="battles-list" class="battle-list">
+          <div class="loading">Loading battle history...</div>
+        </div>
+
+        <div id="battles-pagination" class="pagination" style="display: none;"></div>
+      </div>
+
+      <!-- ===== STATS TAB ===== -->
+      <div id="stats" class="tab-content">
+        <div id="stats-summary" class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">—</div>
+            <div class="stat-label">Total Battles</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">—</div>
+            <div class="stat-label">Unique Players</div>
+          </div>
+        </div>
+
+        <h3>Top Players by Participation</h3>
+        <div id="stats-list">
+          <div class="loading">Loading player statistics...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const apiBase = document.querySelector('meta[name="ppw-api-base"]')?.getAttribute('content') || 'http://localhost:8787';
+
+    let currentPage = 1;
+    let totalPages = 1;
+
+    function escapeText(text) {
+      const div = document.createElement('div');
+      div.textContent = String(text || '');
+      return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return 'Unknown';
+      try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (e) {
+        return 'Unknown';
+      }
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const tabName = e.target.dataset.tab;
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        e.target.classList.add('active');
+        document.getElementById(tabName).classList.add('active');
+
+        if (tabName === 'stats') {
+          loadStats();
+        } else {
+          loadBattles();
+        }
+      });
+    });
+
+    function renderBattles(data) {
+      const container = document.getElementById('battles-list');
+      const battles = data.battles || [];
+
+      if (battles.length === 0) {
+        container.innerHTML = '<div class="empty-state">No battles found. Try adjusting your search filters.</div>';
+        document.getElementById('battles-pagination').style.display = 'none';
+        return;
+      }
+
+      const html = battles.map(battle => {
+        const attendeesHtml = (battle.attendees || []).map(p =>
+          `<span class="player-tag">${escapeText(p.displayName)}</span>`
+        ).join('');
+
+        const maybeHtml = (battle.maybe || []).map(p =>
+          `<span class="player-tag" style="opacity: 0.6;">${escapeText(p.displayName)} (maybe)</span>`
+        ).join('');
+
+        return `
+          <div class="battle-card">
+            <div class="battle-header">
+              <div>
+                <div class="battle-br">BR ${escapeText(battle.br)}</div>
+                <div class="battle-date">${formatDate(battle.battleTimestamp || battle.createdAt)}</div>
+              </div>
+              <span class="battle-status status-${escapeText(battle.status)}">${escapeText(battle.status)}</span>
+            </div>
+
+            <div class="battle-details">
+              <div class="detail-item">
+                <span class="detail-label">Confirmed</span>
+                <span class="detail-value">${escapeText(battle.counts?.joined || 0)} Players</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Maybe</span>
+                <span class="detail-value">${escapeText(battle.counts?.maybe || 0)} Players</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Declined</span>
+                <span class="detail-value">${escapeText(battle.counts?.declined || 0)} Players</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Time</span>
+                <span class="detail-value">${escapeText(battle.timeStr || 'No time set')}</span>
+              </div>
+            </div>
+
+            ${attendeesHtml || maybeHtml ? `
+              <div class="player-list">
+                <div class="player-list-title">Participants</div>
+                <div class="player-tags">
+                  ${attendeesHtml}
+                  ${maybeHtml}
+                </div>
+              </div>
+            ` : ''}
+
+            ${battle.notes ? `<p style="margin-top: 1rem; color: var(--color-text-muted); font-size: 0.9rem;"><strong>Notes:</strong> ${escapeText(battle.notes)}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+      renderPagination(data.pagination);
+    }
+
+    function renderPagination(pagination) {
+      if (!pagination || pagination.pages <= 1) {
+        document.getElementById('battles-pagination').style.display = 'none';
+        return;
+      }
+
+      const container = document.getElementById('battles-pagination');
+      const buttons = [];
+
+      if (pagination.page > 1) {
+        buttons.push(`<button class="page-button" onclick="goToPage(1)">First</button>`);
+        buttons.push(`<button class="page-button" onclick="goToPage(${pagination.page - 1})">← Prev</button>`);
+      }
+
+      for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) {
+        buttons.push(`<button class="page-button ${i === pagination.page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`);
+      }
+
+      if (pagination.page < pagination.pages) {
+        buttons.push(`<button class="page-button" onclick="goToPage(${pagination.page + 1})">Next →</button>`);
+        buttons.push(`<button class="page-button" onclick="goToPage(${pagination.pages})">Last</button>`);
+      }
+
+      container.innerHTML = buttons.join('');
+      container.style.display = 'flex';
+      currentPage = pagination.page;
+      totalPages = pagination.pages;
+    }
+
+    async function loadBattles(page = 1) {
+      const search = document.getElementById('search-input')?.value || '';
+      const br = document.getElementById('br-filter')?.value || '';
+      const status = document.getElementById('status-filter')?.value || '';
+
+      const container = document.getElementById('battles-list');
+      container.innerHTML = '<div class="loading">Loading battles...</div>';
+
+      try {
+        let url = `${apiBase}/api/battle-history?page=${page}&limit=10`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (br) url += `&br=${encodeURIComponent(br)}`;
+        if (status) url += `&status=${encodeURIComponent(status)}`;
+
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        renderBattles(data);
+      } catch (error) {
+        console.error('Failed to load battles:', error);
+        container.innerHTML = '<div class="empty-state">Failed to load battle history. Please try again.</div>';
+      }
+    }
+
+    function renderStats(data) {
+      // Update summary stats
+      const summaryCards = document.querySelectorAll('#stats-summary .stat-card');
+      if (summaryCards[0]) {
+        summaryCards[0].querySelector('.stat-number').textContent = data.totalBattles || 0;
+      }
+      if (summaryCards[1]) {
+        summaryCards[1].querySelector('.stat-number').textContent = data.uniquePlayers || 0;
+      }
+
+      // Render player stats
+      const players = data.topPlayers || [];
+      const container = document.getElementById('stats-list');
+
+      if (players.length === 0) {
+        container.innerHTML = '<div class="empty-state">No player statistics available yet.</div>';
+        return;
+      }
+
+      const html = players.map((player, idx) => `
+        <div class="player-stat-row">
+          <div class="player-rank">#${idx + 1}</div>
+          <div class="player-name">${escapeText(player.displayName)}</div>
+          <div class="player-stats-columns">
+            <div class="stat-column">
+              <div class="stat-column-label">Participated</div>
+              <div class="stat-column-value">${player.participated}</div>
+            </div>
+            <div class="stat-column">
+              <div class="stat-column-label">Maybe</div>
+              <div class="stat-column-value">${player.maybe}</div>
+            </div>
+            <div class="stat-column">
+              <div class="stat-column-label">Declined</div>
+              <div class="stat-column-value">${player.declined}</div>
+            </div>
+            <div class="stat-column">
+              <div class="stat-column-label">Participation Rate</div>
+              <div class="stat-column-value">${player.participationRate}%</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      container.innerHTML = html;
+    }
+
+    async function loadStats() {
+      const container = document.getElementById('stats-list');
+      container.innerHTML = '<div class="loading">Loading player statistics...</div>';
+
+      try {
+        const response = await fetch(`${apiBase}/api/battle-stats`, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        renderStats(data);
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+        container.innerHTML = '<div class="empty-state">Failed to load player statistics. Please try again.</div>';
+      }
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      loadBattles(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Event listeners
+    document.getElementById('search-button')?.addEventListener('click', () => {
+      currentPage = 1;
+      loadBattles(1);
+    });
+
+    document.getElementById('search-input')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        currentPage = 1;
+        loadBattles(1);
+      }
+    });
+
+    // Initial load
+    window.addEventListener('load', () => {
+      loadBattles();
+    });
+  </script>
+
+  <!-- Hamburger menu toggle -->
+  <script>
+    const toggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+        toggle.setAttribute('aria-expanded', toggle.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+      });
+    }
+  </script>
+
+</body>
+</html>

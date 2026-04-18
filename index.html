@@ -25,6 +25,7 @@
       <ul class="nav-links" id="nav-links">
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="members.html">Members</a></li>
+        <li><a href="battles.html">Battles</a></li>
         <li><a href="recruitment.html">Join Us</a></li>
         <li><a href="rules.html">Rules</a></li>
       </ul>
@@ -457,36 +458,39 @@
       battleLogStatus.dataset.state = state || 'idle';
     }
 
-    function renderBattleLog(replays) {
+    function renderBattleLog(games) {
       if (!battleLogList) {
         return;
       }
 
-      if (!Array.isArray(replays) || replays.length === 0) {
-        battleLogList.innerHTML = '<div class="battle-log-empty">No battle records have been imported yet.</div>';
+      if (!Array.isArray(games) || games.length === 0) {
+        battleLogList.innerHTML = '<div class="battle-log-empty">No squadron battles scheduled yet. Check back soon!</div>';
         return;
       }
 
-      var html = replays.map(function (replay) {
-        var resultClass = replay.winnerSide === 'left' ? 'win' : replay.winnerSide === 'right' ? 'loss' : 'tie';
-        var battleDate = formatDate(replay.battleDate || replay.importedAt);
-        var importedAt = replay.importedAt ? formatDate(replay.importedAt) : 'Unknown import time';
+      var html = games.map(function (game) {
+        var gameDate = game.battleTimestamp ? formatDate(game.battleTimestamp) : formatDate(game.createdAt);
+        var timeStr = game.time ? ' at ' + escapeText(game.time) : '';
+        var signups = game.totalSignups || 0;
 
         return [
-          '<article class="battle-log-item battle-log-' + resultClass + '">',
+          '<article class="battle-log-item">',
             '<div class="battle-log-item-top">',
               '<div>',
-                '<div class="battle-log-map">' + escapeText(replay.mapName) + '</div>',
-                '<div class="battle-log-date">' + battleDate + '</div>',
+                '<div class="battle-log-map">BR ' + escapeText(game.br || 'N/A') + ' Squadron Battle</div>',
+                '<div class="battle-log-date">' + gameDate + timeStr + '</div>',
               '</div>',
-              '<div class="battle-log-result">' + escapeText(formatResult(replay)) + '</div>',
+              '<div class="battle-log-result">Scheduled</div>',
             '</div>',
-            '<div class="battle-log-score">' + buildScoreLabel(replay) + '</div>',
+            '<div class="battle-log-score">',
+              '<span class="score-value">' + escapeText(signups) + '</span>',
+              '<span class="score-label">players signed up</span>',
+            '</div>',
             '<div class="battle-log-meta">',
-              '<span>' + escapeText(replay.playerCount || 0) + ' players</span>',
-              '<span>Imported ' + importedAt + '</span>',
+              '<span>' + escapeText(game.attendees || 0) + ' confirmed</span>',
+              '<span>' + escapeText(game.maybe || 0) + ' maybe</span>',
             '</div>',
-            '<p class="battle-log-note">' + escapeText(replay.resultText || 'Replay summary imported from the bot archive.') + '</p>',
+            (game.notes ? '<p class="battle-log-note">' + escapeText(game.notes) + '</p>' : ''),
           '</article>'
         ].join('');
       }).join('');
@@ -505,8 +509,8 @@
       }, 8000);
 
       try {
-        setBattleLogStatus('Loading latest matches...', 'loading');
-        var response = await fetch(apiBase + '/api/squadron-battle-log?limit=6', {
+        setBattleLogStatus('Loading squadron battles...', 'loading');
+        var response = await fetch(apiBase + '/api/squadron-battle-games?limit=6', {
           signal: controller.signal,
           cache: 'no-store'
         });
@@ -516,27 +520,14 @@
         }
 
         var data = await response.json();
-        var totals = data.totals || {};
-
-        setBattleStat('total', escapeText(totals.totalReplays || 0));
-        setBattleStat('left', escapeText(totals.leftWins || 0));
-        setBattleStat('right', escapeText(totals.rightWins || 0));
-        setBattleStat('ties', escapeText(totals.ties || 0));
-
-        renderBattleLog(data.recentReplays || []);
-
-        var lastImport = totals.lastImport ? formatDate(totals.lastImport) : 'n/a';
-        setBattleLogStatus('Last sync: ' + lastImport, 'ready');
+        renderBattleLog(data.games || []);
+        setBattleLogStatus('Squadron battles loaded', 'ready');
       } catch (error) {
-        console.error('[Battle Log] Failed to load archive:', error);
-        setBattleLogStatus('Unable to load live battle log', 'error');
+        console.error('[Battle Log] Failed to load games:', error);
+        setBattleLogStatus('Unable to load squadron battles', 'error');
         if (battleLogList) {
-          battleLogList.innerHTML = '<div class="battle-log-empty">The bot is offline or the match log endpoint is unavailable right now.</div>';
+          battleLogList.innerHTML = '<div class="battle-log-empty">The bot is offline or the games endpoint is unavailable right now.</div>';
         }
-        setBattleStat('total', '—');
-        setBattleStat('left', '—');
-        setBattleStat('right', '—');
-        setBattleStat('ties', '—');
       } finally {
         clearTimeout(timeout);
       }

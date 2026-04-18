@@ -357,48 +357,25 @@
   <section style="padding: 2rem 0;">
     <div class="container">
       <div class="tabs">
-        <button class="tab-button active" data-tab="battles">Battle Log</button>
+        <button class="tab-button active" data-tab="games">Game History</button>
         <button class="tab-button" data-tab="stats">Player Statistics</button>
       </div>
 
-      <!-- ===== BATTLES TAB ===== -->
-      <div id="battles" class="tab-content active">
+      <!-- ===== GAMES TAB ===== -->
+      <div id="games" class="tab-content active">
         <div class="search-bar">
-          <input type="text" id="search-input" class="search-input" placeholder="Search by battle rating or notes..." />
-          <select id="br-filter" class="filter-select">
-            <option value="">All Battle Ratings</option>
-            <option value="5.0">5.0</option>
-            <option value="5.3">5.3</option>
-            <option value="5.7">5.7</option>
-            <option value="6.0">6.0</option>
-            <option value="6.3">6.3</option>
-            <option value="6.7">6.7</option>
-            <option value="7.0">7.0</option>
-            <option value="7.3">7.3</option>
-            <option value="7.7">7.7</option>
-            <option value="8.0">8.0</option>
-            <option value="8.3">8.3</option>
-            <option value="8.7">8.7</option>
-            <option value="9.0">9.0</option>
-            <option value="9.3">9.3</option>
-            <option value="9.7">9.7</option>
-            <option value="10.0">10.0</option>
-            <option value="10.3">10.3</option>
-            <option value="10.7">10.7</option>
-          </select>
-          <select id="status-filter" class="filter-select">
-            <option value="">All Statuses</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+          <input type="text" id="search-input" class="search-input" placeholder="Search by map name..." />
+          <select id="map-filter" class="filter-select">
+            <option value="">All Maps</option>
           </select>
           <button class="search-button" id="search-button">Search</button>
         </div>
 
-        <div id="battles-list" class="battle-list">
-          <div class="loading">Loading battle history...</div>
+        <div id="games-list" class="battle-list">
+          <div class="loading">Loading game history...</div>
         </div>
 
-        <div id="battles-pagination" class="pagination" style="display: none;"></div>
+        <div id="games-pagination" class="pagination" style="display: none;"></div>
       </div>
 
       <!-- ===== STATS TAB ===== -->
@@ -427,6 +404,7 @@
 
     let currentPage = 1;
     let totalPages = 1;
+    let allMaps = [];
 
     function escapeText(text) {
       const div = document.createElement('div');
@@ -462,129 +440,106 @@
         if (tabName === 'stats') {
           loadStats();
         } else {
-          loadBattles();
+          loadGames();
         }
       });
     });
 
-    function renderBattles(data) {
-      const container = document.getElementById('battles-list');
-      const battles = data.battles || [];
+    function renderGames(data) {
+      const container = document.getElementById('games-list');
+      const games = data.recentReplays || [];
 
-      if (battles.length === 0) {
-        container.innerHTML = '<div class="empty-state">No battles found. Try adjusting your search filters.</div>';
-        document.getElementById('battles-pagination').style.display = 'none';
+      if (games.length === 0) {
+        container.innerHTML = '<div class="empty-state">No games found. The squad hasn\'t recorded any replays yet.</div>';
+        document.getElementById('games-pagination').style.display = 'none';
         return;
       }
 
-      const html = battles.map(battle => {
-        const attendeesHtml = (battle.attendees || []).map(p =>
-          `<span class="player-tag">${escapeText(p.displayName)}</span>`
-        ).join('');
-
-        const maybeHtml = (battle.maybe || []).map(p =>
-          `<span class="player-tag" style="opacity: 0.6;">${escapeText(p.displayName)} (maybe)</span>`
-        ).join('');
+      const html = games.map(game => {
+        const resultClass = game.winnerSide === 'left' ? 'win' : game.winnerSide === 'right' ? 'loss' : 'tie';
+        const resultText = game.winnerSide === 'left' ? '✓ Victory' : game.winnerSide === 'right' ? '✗ Defeat' : '= Draw';
+        const battleDate = formatDate(game.battleDate || game.importedAt);
 
         return `
-          <div class="battle-card">
+          <div class="battle-card battle-log-${resultClass}">
             <div class="battle-header">
               <div>
-                <div class="battle-br">BR ${escapeText(battle.br)}</div>
-                <div class="battle-date">${formatDate(battle.battleTimestamp || battle.createdAt)}</div>
+                <div class="battle-br">${escapeText(game.mapName)}</div>
+                <div class="battle-date">${battleDate}</div>
               </div>
-              <span class="battle-status status-${escapeText(battle.status)}">${escapeText(battle.status)}</span>
+              <div style="font-weight: 600; font-size: 1.1rem;">${resultText}</div>
             </div>
 
             <div class="battle-details">
               <div class="detail-item">
-                <span class="detail-label">Confirmed</span>
-                <span class="detail-value">${escapeText(battle.counts?.joined || 0)} Players</span>
+                <span class="detail-label">Opponent</span>
+                <span class="detail-value">${escapeText(game.rightLabel || 'Unknown')}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">Maybe</span>
-                <span class="detail-value">${escapeText(battle.counts?.maybe || 0)} Players</span>
+                <span class="detail-label">Our Team</span>
+                <span class="detail-value">${escapeText(game.leftLabel || 'PPW Squadron')}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">Declined</span>
-                <span class="detail-value">${escapeText(battle.counts?.declined || 0)} Players</span>
+                <span class="detail-label">Score</span>
+                <span class="detail-value">${escapeText(game.leftScore || 0)} - ${escapeText(game.rightScore || 0)}</span>
               </div>
               <div class="detail-item">
-                <span class="detail-label">Time</span>
-                <span class="detail-value">${escapeText(battle.timeStr || 'No time set')}</span>
+                <span class="detail-label">Players</span>
+                <span class="detail-value">${escapeText(game.playerCount || 0)} Total</span>
               </div>
             </div>
 
-            ${attendeesHtml || maybeHtml ? `
-              <div class="player-list">
-                <div class="player-list-title">Participants</div>
-                <div class="player-tags">
-                  ${attendeesHtml}
-                  ${maybeHtml}
-                </div>
-              </div>
-            ` : ''}
-
-            ${battle.notes ? `<p style="margin-top: 1rem; color: var(--color-text-muted); font-size: 0.9rem;"><strong>Notes:</strong> ${escapeText(battle.notes)}</p>` : ''}
+            ${game.resultText ? `<p style="margin-top: 1rem; color: var(--color-text-muted); font-size: 0.9rem;"><strong>Summary:</strong> ${escapeText(game.resultText)}</p>` : ''}
           </div>
         `;
       }).join('');
 
       container.innerHTML = html;
-      renderPagination(data.pagination);
     }
 
-    function renderPagination(pagination) {
-      if (!pagination || pagination.pages <= 1) {
-        document.getElementById('battles-pagination').style.display = 'none';
-        return;
-      }
-
-      const container = document.getElementById('battles-pagination');
-      const buttons = [];
-
-      if (pagination.page > 1) {
-        buttons.push(`<button class="page-button" onclick="goToPage(1)">First</button>`);
-        buttons.push(`<button class="page-button" onclick="goToPage(${pagination.page - 1})">← Prev</button>`);
-      }
-
-      for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) {
-        buttons.push(`<button class="page-button ${i === pagination.page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`);
-      }
-
-      if (pagination.page < pagination.pages) {
-        buttons.push(`<button class="page-button" onclick="goToPage(${pagination.page + 1})">Next →</button>`);
-        buttons.push(`<button class="page-button" onclick="goToPage(${pagination.pages})">Last</button>`);
-      }
-
-      container.innerHTML = buttons.join('');
-      container.style.display = 'flex';
-      currentPage = pagination.page;
-      totalPages = pagination.pages;
-    }
-
-    async function loadBattles(page = 1) {
+    async function loadGames() {
       const search = document.getElementById('search-input')?.value || '';
-      const br = document.getElementById('br-filter')?.value || '';
-      const status = document.getElementById('status-filter')?.value || '';
+      const mapFilter = document.getElementById('map-filter')?.value || '';
 
-      const container = document.getElementById('battles-list');
-      container.innerHTML = '<div class="loading">Loading battles...</div>';
+      const container = document.getElementById('games-list');
+      container.innerHTML = '<div class="loading">Loading game history...</div>';
 
       try {
-        let url = `${apiBase}/api/battle-history?page=${page}&limit=10`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        if (br) url += `&br=${encodeURIComponent(br)}`;
-        if (status) url += `&status=${encodeURIComponent(status)}`;
-
-        const response = await fetch(url, { cache: 'no-store' });
+        const response = await fetch(`${apiBase}/api/squadron-battle-log?limit=50`, { cache: 'no-store' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
-        renderBattles(data);
+        let games = data.recentReplays || [];
+
+        // Populate map filter options
+        if (allMaps.length === 0 && data.topMaps) {
+          allMaps = data.topMaps.map(m => m.mapName);
+          const mapSelect = document.getElementById('map-filter');
+          allMaps.forEach(map => {
+            const option = document.createElement('option');
+            option.value = map;
+            option.textContent = map;
+            mapSelect.appendChild(option);
+          });
+        }
+
+        // Filter by search
+        if (search) {
+          games = games.filter(g =>
+            (g.mapName && g.mapName.toLowerCase().includes(search.toLowerCase())) ||
+            (g.resultText && g.resultText.toLowerCase().includes(search.toLowerCase()))
+          );
+        }
+
+        // Filter by map
+        if (mapFilter) {
+          games = games.filter(g => g.mapName === mapFilter);
+        }
+
+        renderGames({ recentReplays: games });
       } catch (error) {
-        console.error('Failed to load battles:', error);
-        container.innerHTML = '<div class="empty-state">Failed to load battle history. Please try again.</div>';
+        console.error('Failed to load games:', error);
+        container.innerHTML = '<div class="empty-state">Failed to load game history. Please try again.</div>';
       }
     }
 
@@ -659,20 +614,22 @@
 
     // Event listeners
     document.getElementById('search-button')?.addEventListener('click', () => {
-      currentPage = 1;
-      loadBattles(1);
+      loadGames();
     });
 
     document.getElementById('search-input')?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
-        currentPage = 1;
-        loadBattles(1);
+        loadGames();
       }
+    });
+
+    document.getElementById('map-filter')?.addEventListener('change', () => {
+      loadGames();
     });
 
     // Initial load
     window.addEventListener('load', () => {
-      loadBattles();
+      loadGames();
     });
   </script>
 

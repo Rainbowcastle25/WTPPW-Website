@@ -68,7 +68,7 @@
   <div class="stats-bar">
     <div class="container">
       <div class="stat-item">
-        <div class="stat-value">15+</div>
+        <div class="stat-value" id="stat-members">—</div>
         <div class="stat-label">Active Members</div>
       </div>
       <div class="stat-item">
@@ -450,6 +450,38 @@
       }
     }
 
+    async function loadStats() {
+      var membersElement = document.getElementById('stat-members');
+      if (!membersElement || !apiBase) {
+        return;
+      }
+
+      try {
+        var response = await fetch(apiBase + '/api/squadron-members', {
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+
+        var data = await response.json();
+        var members = Array.isArray(data.members) ? data.members : [];
+        var activeCount = members.filter(function (member) {
+          return member.active === true || member.status === 'active';
+        }).length;
+
+        if (activeCount === 0) {
+          membersElement.textContent = String(members.length) + '+';
+        } else {
+          membersElement.textContent = String(activeCount) + '+';
+        }
+      } catch (error) {
+        console.error('[Stats] Failed to load member count:', error);
+        membersElement.textContent = '15+';
+      }
+    }
+
     function setBattleLogStatus(message, state) {
       if (!battleLogStatus) {
         return;
@@ -534,6 +566,7 @@
       }
     }
 
+    loadStats();
     loadBattleLog();
     loadAnnouncements();
   </script>

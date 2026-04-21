@@ -457,7 +457,11 @@
       }
 
       try {
-        var response = await fetch(apiBase + '/api/squadron-members', {
+        var url = new URL('/api/squadron-members', apiBase);
+        url.searchParams.set('name', 'Premium Players Worldwide');
+
+        var response = await fetch(url.toString(), {
+          mode: 'cors',
           cache: 'no-store'
         });
 
@@ -466,15 +470,18 @@
         }
 
         var data = await response.json();
-        var members = Array.isArray(data.members) ? data.members : [];
-        var activeCount = members.filter(function (member) {
-          return member.active === true || member.status === 'active';
-        }).length;
 
-        if (activeCount === 0) {
-          membersElement.textContent = String(members.length) + '+';
+        if (data.ok === false) {
+          throw new Error(data.error || 'API returned an error');
+        }
+
+        var players = Array.isArray(data.players) ? data.players : [];
+        var memberCount = players.length;
+
+        if (memberCount > 0) {
+          membersElement.textContent = String(memberCount) + '+';
         } else {
-          membersElement.textContent = String(activeCount) + '+';
+          membersElement.textContent = '15+';
         }
       } catch (error) {
         console.error('[Stats] Failed to load member count:', error);

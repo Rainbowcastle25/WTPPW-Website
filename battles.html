@@ -320,6 +320,22 @@
       padding: 2rem;
       color: var(--color-text-muted);
     }
+
+    .api-notice {
+      background: rgba(255, 184, 0, 0.08);
+      border: 1px solid rgba(255, 184, 0, 0.3);
+      border-left: 3px solid var(--color-accent);
+      border-radius: 4px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+    }
+
+    .api-notice strong {
+      color: var(--color-accent);
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -335,6 +351,7 @@
         <li><a href="index.html">Home</a></li>
         <li><a href="members.html">Members</a></li>
         <li><a href="battles.html" class="active">Battles</a></li>
+        <li><a href="tournaments.html">Tournaments</a></li>
         <li><a href="recruitment.html">Join Us</a></li>
         <li><a href="rules.html">Rules</a></li>
       </ul>
@@ -363,6 +380,9 @@
 
       <!-- ===== GAMES TAB ===== -->
       <div id="games" class="tab-content active">
+        <div class="api-notice">
+          <strong>⚠️ Note:</strong> The current API returns team-level battle results only. <strong>Per-player statistics (kills, deaths, scores) are not yet available.</strong> This feature is on the roadmap and will be integrated once the API is updated to include individual player performance data.
+        </div>
         <div class="search-bar">
           <input type="text" id="search-input" class="search-input" placeholder="Search by map name..." />
           <select id="map-filter" class="filter-select">

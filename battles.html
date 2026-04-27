@@ -12,329 +12,552 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+
   <style>
-    .tabs {
+    /* ── Battles-page overrides ── */
+
+    /* Tab bar */
+    .battles-tabs {
       display: flex;
-      gap: 1rem;
+      gap: 0;
       border-bottom: 1px solid var(--color-border);
-      margin-bottom: 2rem;
+      margin-bottom: 2.5rem;
     }
 
-    .tab-button {
-      padding: 1rem;
+    .battles-tab-btn {
+      position: relative;
+      padding: 0.85rem 1.6rem;
       background: none;
       border: none;
-      border-bottom: 2px solid transparent;
+      border-bottom: 3px solid transparent;
       color: var(--color-text-muted);
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
       cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
+      transition: color var(--transition), border-color var(--transition), background var(--transition);
+      margin-bottom: -1px;
     }
 
-    .tab-button:hover {
+    .battles-tab-btn:hover {
       color: var(--color-text);
+      background: rgba(255,184,0,0.04);
     }
 
-    .tab-button.active {
-      color: var(--color-primary);
-      border-bottom-color: var(--color-primary);
+    .battles-tab-btn.active {
+      color: var(--color-accent);
+      border-bottom-color: var(--color-accent);
+      background: rgba(255,184,0,0.05);
     }
 
-    .tab-content {
-      display: none;
-    }
+    .battles-tab-content { display: none; }
+    .battles-tab-content.active { display: block; }
 
-    .tab-content.active {
-      display: block;
-    }
-
-    .search-bar {
-      display: flex;
+    /* Dashboard stats strip */
+    .battles-summary {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
     }
 
-    .search-input,
-    .filter-select {
-      padding: 0.75rem;
-      background: var(--color-surface);
+    .battles-stat-card {
+      background: linear-gradient(180deg, rgba(26,26,26,0.95), rgba(13,13,13,0.98));
       border: 1px solid var(--color-border);
-      color: var(--color-text);
-      border-radius: 4px;
-      font-family: inherit;
-    }
-
-    .search-input {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .filter-select {
-      min-width: 150px;
-    }
-
-    .search-button {
-      padding: 0.75rem 1.5rem;
-      background: var(--color-primary);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-
-    .search-button:hover {
-      background: #ff6b35;
-    }
-
-    .battle-list {
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.35rem;
     }
 
-    .battle-card {
+    .battles-stat-card.wins { border-top: 3px solid var(--color-green); }
+    .battles-stat-card.losses { border-top: 3px solid var(--color-red); }
+    .battles-stat-card.draws { border-top: 3px solid var(--color-accent); }
+
+    .battles-stat-label {
+      font-family: var(--font-heading);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .battles-stat-value {
+      font-family: var(--font-heading);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      letter-spacing: 0.06em;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+
+    .battles-stat-card.wins .battles-stat-value { color: var(--color-green); }
+    .battles-stat-card.losses .battles-stat-value { color: var(--color-red); }
+
+    .battles-stat-sub {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+    }
+
+    /* Win-rate bar */
+    .winrate-bar-wrap {
+      margin: 0 0 2.5rem;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      transition: all 0.2s;
+      border-radius: var(--radius);
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .winrate-bar-label {
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      white-space: nowrap;
+      min-width: 80px;
+    }
+
+    .winrate-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--color-surface-2);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .winrate-bar-win {
+      height: 100%;
+      background: var(--color-green);
+      transition: width 0.6s ease;
+    }
+    .winrate-bar-draw {
+      height: 100%;
+      background: var(--color-accent);
+      transition: width 0.6s ease;
+    }
+    .winrate-bar-loss {
+      height: 100%;
+      background: var(--color-red);
+      transition: width 0.6s ease;
+    }
+
+    .winrate-legend {
+      display: flex;
+      gap: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .winrate-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-heading);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .winrate-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Search / filter toolbar */
+    .battles-toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 0.85rem;
+      align-items: end;
+      margin-bottom: 1.5rem;
+    }
+
+    .battles-toolbar-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .battles-toolbar-field label {
+      font-family: var(--font-heading);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .battles-control {
+      height: 42px;
+      border-radius: var(--radius);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      padding: 0 0.9rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .battles-control:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(255,184,0,0.1);
+    }
+
+    select.battles-control {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+                        linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+      background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 10px) calc(50% - 2px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 2rem;
+      min-width: 140px;
+      cursor: pointer;
+    }
+
+    /* Battle list */
+    .battles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    /* Battle card (extends .battle-log-item) */
+    .battle-card {
+      background: linear-gradient(180deg, rgba(20,20,20,0.95), rgba(10,10,10,0.98));
+      border: 1px solid var(--color-border);
+      border-left: 4px solid var(--color-purple);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      cursor: default;
     }
 
     .battle-card:hover {
-      border-color: var(--color-primary);
-      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+      border-color: var(--color-purple);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 12px var(--color-purple-glow);
     }
 
-    .battle-header {
+    .battle-card.win {
+      border-left-color: var(--color-green);
+    }
+    .battle-card.win:hover {
+      border-color: var(--color-green);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 12px rgba(39,174,96,0.2);
+    }
+
+    .battle-card.loss {
+      border-left-color: var(--color-red);
+    }
+    .battle-card.loss:hover {
+      border-color: var(--color-red);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 12px rgba(192,57,43,0.2);
+    }
+
+    .battle-card.draw {
+      border-left-color: var(--color-accent);
+    }
+
+    .battle-card-top {
       display: flex;
+      align-items: flex-start;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .battle-br {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--color-primary);
-    }
-
-    .battle-date {
-      color: var(--color-text-muted);
-      font-size: 0.9rem;
-    }
-
-    .battle-status {
-      padding: 0.25rem 0.75rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-
-    .status-completed {
-      background: rgba(76, 175, 80, 0.1);
-      color: #4cb150;
-    }
-
-    .status-cancelled {
-      background: rgba(244, 67, 54, 0.1);
-      color: #f44336;
-    }
-
-    .battle-details {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 1rem;
-      margin: 1rem 0;
-      padding: 1rem;
-      background: var(--color-bg);
-      border-radius: 4px;
+      margin-bottom: 0.85rem;
     }
 
-    .detail-item {
+    .battle-card-map {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-heading);
+    }
+
+    .battle-card-date {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .battle-result-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-heading);
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2px;
+      border: 1px solid;
+      flex-shrink: 0;
+    }
+
+    .battle-result-badge.win {
+      color: var(--color-green);
+      border-color: var(--color-green);
+      background: rgba(39,174,96,0.08);
+    }
+
+    .battle-result-badge.loss {
+      color: var(--color-red);
+      border-color: var(--color-red);
+      background: rgba(192,57,43,0.08);
+    }
+
+    .battle-result-badge.draw {
+      color: var(--color-accent);
+      border-color: rgba(255,184,0,0.4);
+      background: rgba(255,184,0,0.06);
+    }
+
+    .battle-card-body {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1.5rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 3px;
+      padding: 0.9rem 1.1rem;
+    }
+
+    .battle-team {
       display: flex;
       flex-direction: column;
+      gap: 0.15rem;
     }
 
-    .detail-label {
-      font-size: 0.85rem;
+    .battle-team-label {
+      font-size: 0.72rem;
       color: var(--color-text-muted);
-      margin-bottom: 0.25rem;
+      font-family: var(--font-heading);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    .detail-value {
-      font-weight: 600;
-      color: var(--color-text);
+    .battle-team-name {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+      color: var(--color-heading);
     }
 
-    .player-list {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--color-border);
+    .battle-score {
+      text-align: center;
     }
 
-    .player-list-title {
-      font-size: 0.9rem;
+    .battle-score-value {
+      font-family: var(--font-heading);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      letter-spacing: 0.1em;
+      color: var(--color-accent);
+      line-height: 1;
+    }
+
+    .battle-score-label {
+      font-size: 0.72rem;
       color: var(--color-text-muted);
-      margin-bottom: 0.5rem;
-      font-weight: 500;
+      font-family: var(--font-heading);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 0.2rem;
     }
 
-    .player-tags {
+    .battle-card-note {
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+      color: var(--color-text-muted);
+    }
+
+    .battle-card-meta {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
+      gap: 1.5rem;
+      margin-top: 0.65rem;
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      font-family: var(--font-heading);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .player-tag {
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      background: var(--color-bg);
-      border-radius: 3px;
-      font-size: 0.8rem;
+    .battle-card-meta span { white-space: nowrap; }
+
+    /* Empty / loading states */
+    .battles-empty {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border: 1px dashed rgba(255,184,0,0.2);
+      border-radius: var(--radius);
+      color: var(--color-text-muted);
+      background: rgba(255,184,0,0.02);
     }
 
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 2rem;
-    }
-
-    .page-button {
-      padding: 0.5rem 1rem;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      color: var(--color-text);
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all 0.2s;
-    }
-
-    .page-button:hover {
-      background: var(--color-primary);
-      color: white;
-    }
-
-    .page-button.active {
-      background: var(--color-primary);
-      color: white;
-    }
-
-    .page-button:disabled {
+    .battles-empty-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
       opacity: 0.5;
-      cursor: not-allowed;
     }
 
-    .stats-grid {
+    .battles-loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--color-text-muted);
+    }
+
+    .battles-loading-spinner {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--color-border);
+      border-top-color: var(--color-accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 0.75rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* API notice */
+    .api-notice {
+      background: rgba(255,184,0,0.05);
+      border: 1px solid rgba(255,184,0,0.2);
+      border-left: 3px solid var(--color-accent);
+      border-radius: var(--radius);
+      padding: 0.9rem 1.25rem;
+      margin-bottom: 1.75rem;
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+    }
+
+    .api-notice strong { color: var(--color-accent); }
+
+    /* ── Player Stats tab ── */
+    .player-stats-summary {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
       margin-bottom: 2rem;
     }
 
-    .stat-card {
-      background: var(--color-surface);
+    .player-stats-table-wrap {
       border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      text-align: center;
+      border-radius: var(--radius);
+      overflow: hidden;
     }
 
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--color-primary);
-      margin-bottom: 0.5rem;
+    .player-stats-table {
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    .stat-label {
+    .player-stats-table th {
+      background: var(--color-surface-2);
       color: var(--color-text-muted);
-      font-size: 0.9rem;
-    }
-
-    .player-stat-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.9rem 1.25rem;
+      text-align: left;
       border-bottom: 1px solid var(--color-border);
-      transition: background 0.2s;
+      white-space: nowrap;
     }
 
-    .player-stat-row:hover {
-      background: var(--color-bg);
-    }
-
-    .player-stat-row:last-child {
-      border-bottom: none;
-    }
-
-    .player-name {
-      font-weight: 500;
+    .player-stats-table td {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 0.95rem;
+      vertical-align: middle;
       color: var(--color-text);
     }
 
-    .player-rank {
-      color: var(--color-primary);
-      font-weight: 600;
-      min-width: 30px;
-      text-align: center;
-    }
+    .player-stats-table tr:last-child td { border-bottom: none; }
 
-    .player-stats-columns {
-      display: flex;
-      gap: 2rem;
-      justify-content: flex-end;
-      flex: 1;
-    }
+    .player-stats-table tr:hover td { background: rgba(139,43,226,0.05); }
 
-    .stat-column {
-      text-align: center;
-      min-width: 100px;
-    }
-
-    .stat-column-label {
+    .player-rank-num {
+      font-family: var(--font-heading);
+      color: var(--color-text-muted);
       font-size: 0.85rem;
-      color: var(--color-text-muted);
-      margin-bottom: 0.25rem;
+      letter-spacing: 0.08em;
     }
 
-    .stat-column-value {
-      font-size: 1.1rem;
+    .player-stat-name {
       font-weight: 600;
+      color: var(--color-heading);
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: var(--color-text-muted);
+    .player-stat-bar-cell { min-width: 120px; }
+
+    .player-stat-bar-track {
+      height: 4px;
+      background: var(--color-surface-2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.3rem;
     }
 
-    .loading {
-      text-align: center;
-      padding: 2rem;
-      color: var(--color-text-muted);
+    .player-stat-bar-fill {
+      height: 100%;
+      background: var(--color-purple);
+      border-radius: 2px;
     }
 
-    .api-notice {
-      background: rgba(255, 184, 0, 0.08);
-      border: 1px solid rgba(255, 184, 0, 0.3);
-      border-left: 3px solid var(--color-accent);
-      border-radius: 4px;
-      padding: 1rem 1.5rem;
-      margin-bottom: 2rem;
-      color: var(--color-text-muted);
-      font-size: 0.95rem;
-    }
-
-    .api-notice strong {
+    .player-stat-pct {
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
       color: var(--color-accent);
-      font-weight: 600;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .battles-summary {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .battles-toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+      .player-stats-summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .battles-summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .battles-toolbar {
+        grid-template-columns: 1fr;
+      }
+      .battle-card-body {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        text-align: center;
+      }
+      .battle-card-meta {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      .winrate-bar-wrap {
+        flex-wrap: wrap;
+      }
+      .player-stats-summary {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -361,308 +584,497 @@
     </div>
   </nav>
 
-  <!-- ===== HERO ===== -->
-  <header class="hero" style="padding: 3rem 0;">
+  <!-- ===== PAGE HERO ===== -->
+  <div class="page-hero">
     <div class="container">
-      <div class="section-label">Battle Records</div>
-      <h1 class="hero-title" style="margin: 0.5rem 0;">Battle History &amp; Stats</h1>
-      <p class="hero-subtitle" style="margin-top: 0.5rem;">Search our squadron battles and view player statistics</p>
+      <p class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        Battles
+      </p>
+      <div class="section-label">Combat Record</div>
+      <h1>Battle History &amp; Stats</h1>
+      <p class="text-muted mt-2" style="max-width: 540px;">
+        Squadron battle records imported automatically from War Thunder replays via the Discord bot.
+        Search history, track results, and see who's showing up to fight.
+      </p>
     </div>
-  </header>
+  </div>
 
   <!-- ===== MAIN CONTENT ===== -->
-  <section style="padding: 2rem 0;">
+  <section>
     <div class="container">
-      <div class="tabs">
-        <button class="tab-button active" data-tab="games">Game History</button>
-        <button class="tab-button" data-tab="stats">Player Statistics</button>
+
+      <!-- Dashboard summary strip -->
+      <div class="battles-summary" id="battles-summary">
+        <div class="battles-stat-card">
+          <div class="battles-stat-label">Total Battles</div>
+          <div class="battles-stat-value" id="stat-total">—</div>
+          <div class="battles-stat-sub">Recorded replays</div>
+        </div>
+        <div class="battles-stat-card wins">
+          <div class="battles-stat-label">Victories</div>
+          <div class="battles-stat-value" id="stat-wins">—</div>
+          <div class="battles-stat-sub">Battles won</div>
+        </div>
+        <div class="battles-stat-card losses">
+          <div class="battles-stat-label">Defeats</div>
+          <div class="battles-stat-value" id="stat-losses">—</div>
+          <div class="battles-stat-sub">Battles lost</div>
+        </div>
+        <div class="battles-stat-card draws">
+          <div class="battles-stat-label">Draws</div>
+          <div class="battles-stat-value" id="stat-draws">—</div>
+          <div class="battles-stat-sub">Tied matches</div>
+        </div>
+        <div class="battles-stat-card">
+          <div class="battles-stat-label">Win Rate</div>
+          <div class="battles-stat-value" id="stat-winrate">—</div>
+          <div class="battles-stat-sub">Of recorded battles</div>
+        </div>
       </div>
 
-      <!-- ===== GAMES TAB ===== -->
-      <div id="games" class="tab-content active">
+      <!-- Win/Loss bar -->
+      <div class="winrate-bar-wrap" id="winrate-bar-wrap" style="display:none;">
+        <div class="winrate-bar-label">Record</div>
+        <div class="winrate-bar-track">
+          <div class="winrate-bar-win" id="bar-win" style="width:0%"></div>
+          <div class="winrate-bar-draw" id="bar-draw" style="width:0%"></div>
+          <div class="winrate-bar-loss" id="bar-loss" style="width:0%"></div>
+        </div>
+        <div class="winrate-legend">
+          <div class="winrate-legend-item">
+            <div class="winrate-legend-dot" style="background:var(--color-green)"></div>
+            <span id="legend-wins">W</span>
+          </div>
+          <div class="winrate-legend-item">
+            <div class="winrate-legend-dot" style="background:var(--color-accent)"></div>
+            <span id="legend-draws">D</span>
+          </div>
+          <div class="winrate-legend-item">
+            <div class="winrate-legend-dot" style="background:var(--color-red)"></div>
+            <span id="legend-losses">L</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="battles-tabs">
+        <button class="battles-tab-btn active" data-tab="games">Game History</button>
+        <button class="battles-tab-btn" data-tab="player-stats">Player Statistics</button>
+      </div>
+
+      <!-- ===== GAME HISTORY TAB ===== -->
+      <div id="tab-games" class="battles-tab-content active">
+
         <div class="api-notice">
-          <strong>⚠️ Note:</strong> The current API returns team-level battle results only. <strong>Per-player statistics (kills, deaths, scores) are not yet available.</strong> This feature is on the roadmap and will be integrated once the API is updated to include individual player performance data.
-        </div>
-        <div class="search-bar">
-          <input type="text" id="search-input" class="search-input" placeholder="Search by map name..." />
-          <select id="map-filter" class="filter-select">
-            <option value="">All Maps</option>
-          </select>
-          <button class="search-button" id="search-button">Search</button>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;color:var(--color-accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>
+            <strong>Note:</strong> Per-player statistics (kills, deaths, scores) are not yet available — the current API returns team-level results only. Individual performance data is on the roadmap.
+          </span>
         </div>
 
-        <div id="games-list" class="battle-list">
-          <div class="loading">Loading game history...</div>
+        <div class="battles-toolbar">
+          <div class="battles-toolbar-field">
+            <label for="search-input">Search battles</label>
+            <input type="search" id="search-input" class="battles-control" placeholder="Map name or opponent…" autocomplete="off" />
+          </div>
+          <div class="battles-toolbar-field">
+            <label for="result-filter">Result</label>
+            <select id="result-filter" class="battles-control">
+              <option value="">All results</option>
+              <option value="win">Victory</option>
+              <option value="loss">Defeat</option>
+              <option value="draw">Draw</option>
+            </select>
+          </div>
+          <div class="battles-toolbar-field">
+            <label for="map-filter">Map</label>
+            <select id="map-filter" class="battles-control">
+              <option value="">All maps</option>
+            </select>
+          </div>
+          <div class="battles-toolbar-field" style="justify-content:flex-end;">
+            <label>&nbsp;</label>
+            <button class="btn btn-outline btn-sm battles-control" id="clear-filters" style="height:42px;">Clear</button>
+          </div>
         </div>
 
-        <div id="games-pagination" class="pagination" style="display: none;"></div>
+        <div id="result-count" style="font-size:0.82rem;color:var(--color-text-muted);font-family:var(--font-heading);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1rem;"></div>
+
+        <div id="games-list" class="battles-list">
+          <div class="battles-loading">
+            <div class="battles-loading-spinner"></div>
+            <div>Loading battle history…</div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- ===== STATS TAB ===== -->
-      <div id="stats" class="tab-content">
-        <div id="stats-summary" class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number">—</div>
-            <div class="stat-label">Total Battles</div>
+      <!-- ===== PLAYER STATS TAB ===== -->
+      <div id="tab-player-stats" class="battles-tab-content">
+
+        <div class="player-stats-summary">
+          <div class="battles-stat-card">
+            <div class="battles-stat-label">Total Battles</div>
+            <div class="battles-stat-value" id="pstat-total">—</div>
+            <div class="battles-stat-sub">Recorded matches</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-number">—</div>
-            <div class="stat-label">Unique Players</div>
+          <div class="battles-stat-card">
+            <div class="battles-stat-label">Unique Players</div>
+            <div class="battles-stat-value" id="pstat-players">—</div>
+            <div class="battles-stat-sub">Members who've played</div>
+          </div>
+          <div class="battles-stat-card">
+            <div class="battles-stat-label">Top Attendee</div>
+            <div class="battles-stat-value" id="pstat-top" style="font-size:1.1rem;margin-top:auto;">—</div>
+            <div class="battles-stat-sub" id="pstat-top-count"></div>
           </div>
         </div>
 
-        <h3>Top Players by Participation</h3>
-        <div id="stats-list">
-          <div class="loading">Loading player statistics...</div>
+        <div class="player-stats-table-wrap">
+          <table class="player-stats-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Participated</th>
+                <th>Maybe</th>
+                <th>Declined</th>
+                <th>Rate</th>
+              </tr>
+            </thead>
+            <tbody id="stats-list">
+              <tr>
+                <td colspan="6">
+                  <div class="battles-loading">
+                    <div class="battles-loading-spinner"></div>
+                    <div>Loading player statistics…</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
       </div>
     </div>
   </section>
 
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand-name">Premium Players Worldwide</div>
+          <p class="footer-brand-desc">
+            A War Thunder squadron and familia since 2020 — built on teamwork,
+            competitive SQBs, TSS events, and a friendly community.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="recruitment.html">Join Us</a></li>
+            <li><a href="rules.html">Rules</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Info</h4>
+          <ul>
+            <li><a href="recruitment.html#requirements">Requirements</a></li>
+            <li><a href="rules.html#conduct">Code of Conduct</a></li>
+            <li><a href="members.html#officers">Officers</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
+            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
+        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Hamburger -->
   <script>
-    const apiBase = document.querySelector('meta[name="ppw-api-base"]')?.getAttribute('content') || 'http://localhost:8787';
+    var btn = document.getElementById('nav-toggle');
+    var menu = document.getElementById('nav-links');
+    btn.addEventListener('click', function () {
+      var open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  </script>
 
-    let currentPage = 1;
-    let totalPages = 1;
-    let allMaps = [];
-
-    function escapeText(text) {
-      const div = document.createElement('div');
-      div.textContent = String(text || '');
-      return div.innerHTML;
-    }
-
-    function formatDate(dateStr) {
-      if (!dateStr) return 'Unknown';
-      try {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      } catch (e) {
-        return 'Unknown';
-      }
-    }
-
-    // Tabs
-    document.querySelectorAll('.tab-button').forEach(button => {
-      button.addEventListener('click', (e) => {
-        const tabName = e.target.dataset.tab;
-        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        e.target.classList.add('active');
-        document.getElementById(tabName).classList.add('active');
-
-        if (tabName === 'stats') {
-          loadStats();
-        } else {
-          loadGames();
+  <!-- Tabs -->
+  <script>
+    document.querySelectorAll('.battles-tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tab = btn.dataset.tab;
+        document.querySelectorAll('.battles-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.battles-tab-content').forEach(function (c) { c.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+        if (tab === 'player-stats' && !playerStatsLoaded) {
+          loadPlayerStats();
         }
       });
     });
+  </script>
 
-    function renderGames(data) {
-      const container = document.getElementById('games-list');
-      const games = data.recentReplays || [];
+  <!-- Data -->
+  <script>
+    var apiBase = (document.querySelector('meta[name="ppw-api-base"]') || {}).content || 'http://localhost:8787';
+    var allGames = [];
+    var playerStatsLoaded = false;
 
-      if (games.length === 0) {
-        container.innerHTML = '<div class="empty-state">No games found. The squad hasn\'t recorded any replays yet.</div>';
-        document.getElementById('games-pagination').style.display = 'none';
+    function escapeText(text) {
+      return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return 'Unknown date';
+      try {
+        var d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      } catch (e) { return 'Unknown date'; }
+    }
+
+    function getResultInfo(game) {
+      var ws = game.winnerSide;
+      if (ws === 'left')  return { cls: 'win',  label: 'Victory', icon: '✓' };
+      if (ws === 'right') return { cls: 'loss', label: 'Defeat',  icon: '✗' };
+      if (ws === 'tie')   return { cls: 'draw', label: 'Draw',    icon: '=' };
+      return { cls: '', label: 'Unknown', icon: '?' };
+    }
+
+    function renderGames(games) {
+      var container = document.getElementById('games-list');
+      var countEl = document.getElementById('result-count');
+
+      if (!games || games.length === 0) {
+        countEl.textContent = '';
+        container.innerHTML = [
+          '<div class="battles-empty">',
+            '<div class="battles-empty-icon">🏳️</div>',
+            '<div>No battles match your search. Try clearing your filters.</div>',
+          '</div>'
+        ].join('');
         return;
       }
 
-      const html = games.map(game => {
-        const resultClass = game.winnerSide === 'left' ? 'win' : game.winnerSide === 'right' ? 'loss' : 'tie';
-        const resultText = game.winnerSide === 'left' ? '✓ Victory' : game.winnerSide === 'right' ? '✗ Defeat' : '= Draw';
-        const battleDate = formatDate(game.battleDate || game.importedAt);
+      countEl.textContent = games.length + ' battle' + (games.length === 1 ? '' : 's') + ' found';
 
-        return `
-          <div class="battle-card battle-log-${resultClass}">
-            <div class="battle-header">
-              <div>
-                <div class="battle-br">${escapeText(game.mapName)}</div>
-                <div class="battle-date">${battleDate}</div>
-              </div>
-              <div style="font-weight: 600; font-size: 1.1rem;">${resultText}</div>
-            </div>
+      var html = games.map(function (game) {
+        var res = getResultInfo(game);
+        var battleDate = formatDate(game.battleDate || game.importedAt);
+        var opponent = game.rightLabel || 'Unknown opponent';
+        var ourTeam = game.leftLabel || 'PPW Squadron';
+        var leftScore = game.leftScore != null ? game.leftScore : '—';
+        var rightScore = game.rightScore != null ? game.rightScore : '—';
+        var playerCount = game.playerCount != null ? game.playerCount : '—';
 
-            <div class="battle-details">
-              <div class="detail-item">
-                <span class="detail-label">Opponent</span>
-                <span class="detail-value">${escapeText(game.rightLabel || 'Unknown')}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Our Team</span>
-                <span class="detail-value">${escapeText(game.leftLabel || 'PPW Squadron')}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Score</span>
-                <span class="detail-value">${escapeText(game.leftScore || 0)} - ${escapeText(game.rightScore || 0)}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Players</span>
-                <span class="detail-value">${escapeText(game.playerCount || 0)} Total</span>
-              </div>
-            </div>
-
-            ${game.resultText ? `<p style="margin-top: 1rem; color: var(--color-text-muted); font-size: 0.9rem;"><strong>Summary:</strong> ${escapeText(game.resultText)}</p>` : ''}
-          </div>
-        `;
+        return [
+          '<article class="battle-card ' + res.cls + '">',
+            '<div class="battle-card-top">',
+              '<div>',
+                '<div class="battle-card-map">' + escapeText(game.mapName || 'Unknown map') + '</div>',
+                '<div class="battle-card-date">' + escapeText(battleDate) + '</div>',
+              '</div>',
+              '<div class="battle-result-badge ' + res.cls + '">',
+                res.icon + ' ' + res.label,
+              '</div>',
+            '</div>',
+            '<div class="battle-card-body">',
+              '<div class="battle-team">',
+                '<div class="battle-team-label">Our Squad</div>',
+                '<div class="battle-team-name">' + escapeText(ourTeam) + '</div>',
+              '</div>',
+              '<div class="battle-score">',
+                '<div class="battle-score-value">' + escapeText(leftScore) + ' — ' + escapeText(rightScore) + '</div>',
+                '<div class="battle-score-label">Score</div>',
+              '</div>',
+              '<div class="battle-team" style="text-align:right;">',
+                '<div class="battle-team-label">Opponent</div>',
+                '<div class="battle-team-name">' + escapeText(opponent) + '</div>',
+              '</div>',
+            '</div>',
+            '<div class="battle-card-meta">',
+              '<span>' + escapeText(playerCount) + ' players</span>',
+            '</div>',
+            (game.resultText ? '<div class="battle-card-note">' + escapeText(game.resultText) + '</div>' : ''),
+          '</article>'
+        ].join('');
       }).join('');
 
       container.innerHTML = html;
     }
 
+    function applyFilters() {
+      var search = (document.getElementById('search-input').value || '').toLowerCase().trim();
+      var resultFilter = document.getElementById('result-filter').value;
+      var mapFilter = document.getElementById('map-filter').value;
+
+      var filtered = allGames.filter(function (g) {
+        var res = getResultInfo(g);
+        var matchSearch = !search ||
+          (g.mapName && g.mapName.toLowerCase().indexOf(search) !== -1) ||
+          (g.rightLabel && g.rightLabel.toLowerCase().indexOf(search) !== -1) ||
+          (g.leftLabel && g.leftLabel.toLowerCase().indexOf(search) !== -1) ||
+          (g.resultText && g.resultText.toLowerCase().indexOf(search) !== -1);
+        var matchResult = !resultFilter || res.cls === resultFilter;
+        var matchMap = !mapFilter || g.mapName === mapFilter;
+        return matchSearch && matchResult && matchMap;
+      });
+
+      renderGames(filtered);
+    }
+
+    function updateSummaryStats(games) {
+      var wins = 0, losses = 0, draws = 0;
+      games.forEach(function (g) {
+        var r = getResultInfo(g);
+        if (r.cls === 'win') wins++;
+        else if (r.cls === 'loss') losses++;
+        else if (r.cls === 'draw') draws++;
+      });
+      var total = games.length;
+      var winrate = total > 0 ? Math.round((wins / total) * 100) : 0;
+
+      document.getElementById('stat-total').textContent = total || '—';
+      document.getElementById('stat-wins').textContent = total ? wins : '—';
+      document.getElementById('stat-losses').textContent = total ? losses : '—';
+      document.getElementById('stat-draws').textContent = total ? draws : '—';
+      document.getElementById('stat-winrate').textContent = total ? (winrate + '%') : '—';
+
+      if (total > 0) {
+        var wPct = (wins / total * 100).toFixed(1);
+        var dPct = (draws / total * 100).toFixed(1);
+        var lPct = (losses / total * 100).toFixed(1);
+        document.getElementById('bar-win').style.width = wPct + '%';
+        document.getElementById('bar-draw').style.width = dPct + '%';
+        document.getElementById('bar-loss').style.width = lPct + '%';
+        document.getElementById('legend-wins').textContent = wins + 'W';
+        document.getElementById('legend-draws').textContent = draws + 'D';
+        document.getElementById('legend-losses').textContent = losses + 'L';
+        document.getElementById('winrate-bar-wrap').style.display = 'flex';
+      }
+    }
+
     async function loadGames() {
-      const search = document.getElementById('search-input')?.value || '';
-      const mapFilter = document.getElementById('map-filter')?.value || '';
-
-      const container = document.getElementById('games-list');
-      container.innerHTML = '<div class="loading">Loading game history...</div>';
+      var container = document.getElementById('games-list');
+      container.innerHTML = '<div class="battles-loading"><div class="battles-loading-spinner"></div><div>Loading battle history…</div></div>';
 
       try {
-        const response = await fetch(`${apiBase}/api/squadron-battle-log?limit=50`, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        var response = await fetch(apiBase + '/api/squadron-battle-log?limit=50', { cache: 'no-store' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        var data = await response.json();
+        allGames = data.recentReplays || [];
 
-        const data = await response.json();
-        let games = data.recentReplays || [];
+        updateSummaryStats(allGames);
 
-        // Populate map filter options
-        if (allMaps.length === 0 && data.topMaps) {
-          allMaps = data.topMaps.map(m => m.mapName);
-          const mapSelect = document.getElementById('map-filter');
-          allMaps.forEach(map => {
-            const option = document.createElement('option');
-            option.value = map;
-            option.textContent = map;
-            mapSelect.appendChild(option);
-          });
-        }
+        // Populate map filter
+        var maps = [];
+        allGames.forEach(function (g) {
+          if (g.mapName && maps.indexOf(g.mapName) === -1) maps.push(g.mapName);
+        });
+        maps.sort();
+        var mapSelect = document.getElementById('map-filter');
+        maps.forEach(function (m) {
+          var opt = document.createElement('option');
+          opt.value = m;
+          opt.textContent = m;
+          mapSelect.appendChild(opt);
+        });
 
-        // Filter by search
-        if (search) {
-          games = games.filter(g =>
-            (g.mapName && g.mapName.toLowerCase().includes(search.toLowerCase())) ||
-            (g.resultText && g.resultText.toLowerCase().includes(search.toLowerCase()))
-          );
-        }
-
-        // Filter by map
-        if (mapFilter) {
-          games = games.filter(g => g.mapName === mapFilter);
-        }
-
-        renderGames({ recentReplays: games });
-      } catch (error) {
-        console.error('Failed to load games:', error);
-        container.innerHTML = '<div class="empty-state">Failed to load game history. Please try again.</div>';
+        applyFilters();
+      } catch (err) {
+        console.error('[Battles] Failed to load games:', err);
+        container.innerHTML = [
+          '<div class="battles-empty">',
+            '<div class="battles-empty-icon">⚠️</div>',
+            '<div>Could not load battle history. The API may be offline.</div>',
+          '</div>'
+        ].join('');
       }
     }
 
-    function renderStats(data) {
-      // Update summary stats
-      const summaryCards = document.querySelectorAll('#stats-summary .stat-card');
-      if (summaryCards[0]) {
-        summaryCards[0].querySelector('.stat-number').textContent = data.totalBattles || 0;
-      }
-      if (summaryCards[1]) {
-        summaryCards[1].querySelector('.stat-number').textContent = data.uniquePlayers || 0;
-      }
-
-      // Render player stats
-      const players = data.topPlayers || [];
-      const container = document.getElementById('stats-list');
-
-      if (players.length === 0) {
-        container.innerHTML = '<div class="empty-state">No player statistics available yet.</div>';
-        return;
-      }
-
-      const html = players.map((player, idx) => `
-        <div class="player-stat-row">
-          <div class="player-rank">#${idx + 1}</div>
-          <div class="player-name">${escapeText(player.displayName)}</div>
-          <div class="player-stats-columns">
-            <div class="stat-column">
-              <div class="stat-column-label">Participated</div>
-              <div class="stat-column-value">${player.participated}</div>
-            </div>
-            <div class="stat-column">
-              <div class="stat-column-label">Maybe</div>
-              <div class="stat-column-value">${player.maybe}</div>
-            </div>
-            <div class="stat-column">
-              <div class="stat-column-label">Declined</div>
-              <div class="stat-column-value">${player.declined}</div>
-            </div>
-            <div class="stat-column">
-              <div class="stat-column-label">Participation Rate</div>
-              <div class="stat-column-value">${player.participationRate}%</div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-
-      container.innerHTML = html;
-    }
-
-    async function loadStats() {
-      const container = document.getElementById('stats-list');
-      container.innerHTML = '<div class="loading">Loading player statistics...</div>';
+    async function loadPlayerStats() {
+      playerStatsLoaded = true;
+      var tbody = document.getElementById('stats-list');
+      tbody.innerHTML = '<tr><td colspan="6"><div class="battles-loading"><div class="battles-loading-spinner"></div><div>Loading player statistics…</div></div></td></tr>';
 
       try {
-        const response = await fetch(`${apiBase}/api/battle-stats`, { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        var response = await fetch(apiBase + '/api/battle-stats', { cache: 'no-store' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        var data = await response.json();
 
-        const data = await response.json();
-        renderStats(data);
-      } catch (error) {
-        console.error('Failed to load stats:', error);
-        container.innerHTML = '<div class="empty-state">Failed to load player statistics. Please try again.</div>';
+        document.getElementById('pstat-total').textContent = data.totalBattles || '—';
+        document.getElementById('pstat-players').textContent = data.uniquePlayers || '—';
+
+        var players = data.topPlayers || [];
+        if (players.length > 0) {
+          document.getElementById('pstat-top').textContent = players[0].displayName || '—';
+          document.getElementById('pstat-top-count').textContent = (players[0].participated || 0) + ' battles';
+        }
+
+        var maxParticipated = players.reduce(function (m, p) { return Math.max(m, p.participated || 0); }, 1);
+
+        if (players.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="battles-empty"><div class="battles-empty-icon">📊</div><div>No player statistics available yet.</div></div></td></tr>';
+          return;
+        }
+
+        var rows = players.map(function (p, i) {
+          var pct = Math.round((p.participationRate || 0));
+          var barWidth = Math.round(((p.participated || 0) / maxParticipated) * 100);
+          return [
+            '<tr>',
+              '<td><span class="player-rank-num">#' + (i + 1) + '</span></td>',
+              '<td><span class="player-stat-name">' + escapeText(p.displayName) + '</span></td>',
+              '<td class="player-stat-bar-cell">',
+                escapeText(p.participated || 0),
+                '<div class="player-stat-bar-track"><div class="player-stat-bar-fill" style="width:' + barWidth + '%"></div></div>',
+              '</td>',
+              '<td>' + escapeText(p.maybe || 0) + '</td>',
+              '<td>' + escapeText(p.declined || 0) + '</td>',
+              '<td><span class="player-stat-pct">' + pct + '%</span></td>',
+            '</tr>'
+          ].join('');
+        }).join('');
+
+        tbody.innerHTML = rows;
+      } catch (err) {
+        console.error('[Stats] Failed to load player stats:', err);
+        tbody.innerHTML = '<tr><td colspan="6"><div class="battles-empty"><div class="battles-empty-icon">⚠️</div><div>Could not load player statistics.</div></div></td></tr>';
       }
-    }
-
-    function goToPage(page) {
-      currentPage = page;
-      loadBattles(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Event listeners
-    document.getElementById('search-button')?.addEventListener('click', () => {
-      loadGames();
+    document.getElementById('search-input').addEventListener('input', applyFilters);
+    document.getElementById('result-filter').addEventListener('change', applyFilters);
+    document.getElementById('map-filter').addEventListener('change', applyFilters);
+    document.getElementById('clear-filters').addEventListener('click', function () {
+      document.getElementById('search-input').value = '';
+      document.getElementById('result-filter').value = '';
+      document.getElementById('map-filter').value = '';
+      applyFilters();
     });
 
-    document.getElementById('search-input')?.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        loadGames();
-      }
-    });
-
-    document.getElementById('map-filter')?.addEventListener('change', () => {
-      loadGames();
-    });
-
-    // Initial load
-    window.addEventListener('load', () => {
-      loadGames();
-    });
-  </script>
-
-  <!-- Hamburger menu toggle -->
-  <script>
-    const toggle = document.getElementById('nav-toggle');
-    const navLinks = document.getElementById('nav-links');
-    if (toggle) {
-      toggle.addEventListener('click', () => {
-        navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
-        toggle.setAttribute('aria-expanded', toggle.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
-      });
-    }
+    loadGames();
   </script>
 
 </body>

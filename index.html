@@ -108,6 +108,41 @@
       <p class="section-intro">
         The Discord bot imports War Thunder replay summaries and publishes the latest recorded matches here automatically.
       </p>
+
+      <div class="battle-log-summary">
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Total Battles</span>
+          <span class="battle-log-stat-value" data-battle-stat="total">—</span>
+        </div>
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Victories</span>
+          <span class="battle-log-stat-value" data-battle-stat="wins">—</span>
+        </div>
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Defeats</span>
+          <span class="battle-log-stat-value" data-battle-stat="losses">—</span>
+        </div>
+        <div class="card battle-log-stat">
+          <span class="battle-log-stat-label">Win Rate</span>
+          <span class="battle-log-stat-value" data-battle-stat="winrate">—</span>
+        </div>
+      </div>
+
+      <div class="card battle-log-panel">
+        <div class="battle-log-panel-head">
+          <div>
+            <span class="battle-log-kicker">Latest Results</span>
+            <h3 style="margin:0; font-size:1.05rem;">Recent Battles</h3>
+          </div>
+          <div class="battle-log-status" id="battle-log-status" data-state="loading">Loading…</div>
+        </div>
+        <div class="battle-log-list" id="battle-log-list">
+          <div class="battle-log-empty">Loading squadron battles…</div>
+        </div>
+        <div style="margin-top:1.25rem;">
+          <a href="battles.html" class="btn btn-outline btn-sm">View Full Battle History →</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -503,33 +538,44 @@
       }
 
       if (!Array.isArray(games) || games.length === 0) {
-        battleLogList.innerHTML = '<div class="battle-log-empty">No squadron battles scheduled yet. Check back soon!</div>';
+        battleLogList.innerHTML = '<div class="battle-log-empty">No squadron battles recorded yet. Check back soon!</div>';
         return;
       }
 
-      var html = games.map(function (game) {
-        var gameDate = game.battleTimestamp ? formatDate(game.battleTimestamp) : formatDate(game.createdAt);
-        var timeStr = game.time ? ' at ' + escapeText(game.time) : '';
-        var signups = game.totalSignups || 0;
+      var wins = 0, losses = 0, draws = 0;
+      games.forEach(function (g) {
+        if (g.winnerSide === 'left') wins++;
+        else if (g.winnerSide === 'right') losses++;
+        else if (g.winnerSide === 'tie') draws++;
+      });
+      var total = games.length;
+      setBattleStat('total', total);
+      setBattleStat('wins', wins);
+      setBattleStat('losses', losses);
+      setBattleStat('winrate', total > 0 ? Math.round((wins / total) * 100) + '%' : '—');
+
+      var html = games.slice(0, 5).map(function (game) {
+        var ws = game.winnerSide;
+        var resultCls = ws === 'left' ? 'win' : ws === 'right' ? 'loss' : ws === 'tie' ? 'tie' : '';
+        var resultText = ws === 'left' ? 'Victory' : ws === 'right' ? 'Defeat' : ws === 'tie' ? 'Draw' : 'Unknown';
+        var gameDate = game.battleDate ? formatDate(game.battleDate) : formatDate(game.importedAt);
+        var leftScore = game.leftScore != null ? game.leftScore : '—';
+        var rightScore = game.rightScore != null ? game.rightScore : '—';
 
         return [
-          '<article class="battle-log-item">',
+          '<article class="battle-log-item ' + resultCls + '">',
             '<div class="battle-log-item-top">',
               '<div>',
-                '<div class="battle-log-map">BR ' + escapeText(game.br || 'N/A') + ' Squadron Battle</div>',
-                '<div class="battle-log-date">' + gameDate + timeStr + '</div>',
+                '<div class="battle-log-map">' + escapeText(game.mapName || 'Unknown map') + '</div>',
+                '<div class="battle-log-date">' + escapeText(gameDate) + '</div>',
               '</div>',
-              '<div class="battle-log-result">Scheduled</div>',
+              '<div class="battle-log-result">' + escapeText(resultText) + '</div>',
             '</div>',
-            '<div class="battle-log-score">',
-              '<span class="score-value">' + escapeText(signups) + '</span>',
-              '<span class="score-label">players signed up</span>',
-            '</div>',
+            '<div class="battle-log-score">' + escapeText(leftScore) + ' — ' + escapeText(rightScore) + '</div>',
             '<div class="battle-log-meta">',
-              '<span>' + escapeText(game.attendees || 0) + ' confirmed</span>',
-              '<span>' + escapeText(game.maybe || 0) + ' maybe</span>',
+              '<span>vs ' + escapeText(game.rightLabel || 'Unknown opponent') + '</span>',
+              '<span>' + escapeText(game.playerCount || '—') + ' players</span>',
             '</div>',
-            (game.notes ? '<p class="battle-log-note">' + escapeText(game.notes) + '</p>' : ''),
           '</article>'
         ].join('');
       }).join('');
@@ -543,13 +589,11 @@
       }
 
       var controller = new AbortController();
-      var timeout = setTimeout(function () {
-        controller.abort();
-      }, 8000);
+      var timeout = setTimeout(function () { controller.abort(); }, 8000);
 
       try {
-        setBattleLogStatus('Loading squadron battles...', 'loading');
-        var response = await fetch(apiBase + '/api/squadron-battle-games?limit=6', {
+        setBattleLogStatus('Loading…', 'loading');
+        var response = await fetch(apiBase + '/api/squadron-battle-log?limit=5', {
           signal: controller.signal,
           cache: 'no-store'
         });
@@ -559,13 +603,13 @@
         }
 
         var data = await response.json();
-        renderBattleLog(data.games || []);
-        setBattleLogStatus('Squadron battles loaded', 'ready');
+        renderBattleLog(data.recentReplays || []);
+        setBattleLogStatus('Live', 'ready');
       } catch (error) {
         console.error('[Battle Log] Failed to load games:', error);
-        setBattleLogStatus('Unable to load squadron battles', 'error');
+        setBattleLogStatus('Offline', 'error');
         if (battleLogList) {
-          battleLogList.innerHTML = '<div class="battle-log-empty">The bot is offline or the games endpoint is unavailable right now.</div>';
+          battleLogList.innerHTML = '<div class="battle-log-empty">Battle log unavailable — check the Discord bot or visit the <a href="battles.html">Battles</a> page.</div>';
         }
       } finally {
         clearTimeout(timeout);

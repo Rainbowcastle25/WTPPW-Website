@@ -1096,18 +1096,35 @@ select.roster-control {
 
 /* ---------- Page Hero (inner pages) ---------- */
 .page-hero {
-  padding: calc(var(--nav-height) + 3.5rem) 0 3.5rem;
+  padding: calc(var(--nav-height) + 4rem) 0 4rem;
   background:
-    linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,1) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,1) 100%),
     repeating-linear-gradient(
       45deg,
-      rgba(139,43,226,0.04) 0px,
-      rgba(139,43,226,0.04) 1px,
+      rgba(139,43,226,0.05) 0px,
+      rgba(139,43,226,0.05) 1px,
       transparent 1px,
       transparent 24px
     );
   border-bottom: 1px solid var(--color-purple);
 }
+
+.page-hero h1 {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.page-hero .breadcrumb {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.page-hero .breadcrumb a { color: var(--color-text-muted); }
+.page-hero .breadcrumb a:hover { color: var(--color-accent); }
 
 .page-hero .breadcrumb {
   font-size: 0.8rem;

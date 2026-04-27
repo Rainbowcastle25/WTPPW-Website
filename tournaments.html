@@ -235,13 +235,21 @@
   </nav>
 
   <!-- ===== PAGE HERO ===== -->
-  <header class="hero" style="padding: 3rem 0;">
+  <div class="page-hero">
     <div class="container">
+      <p class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        Tournaments
+      </p>
       <div class="section-label">Hall of Fame</div>
-      <h1 class="hero-title" style="margin: 0.5rem 0;">Tournament Results</h1>
-      <p class="hero-subtitle" style="margin-top: 0.5rem;">Celebrating PPW's Competitive Winners</p>
+      <h1>Tournament Results</h1>
+      <p class="text-muted mt-2" style="max-width: 540px;">
+        Celebrating PPW's competitive winners across all formats — ground, air, and beyond.
+        Check Discord for upcoming tournament announcements.
+      </p>
     </div>
-  </header>
+  </div>
 
   <!-- ===== TOURNAMENTS ===== -->
   <section style="padding: 4rem 0;">
@@ -345,14 +353,13 @@
   </footer>
 
   <script>
-    const toggle = document.getElementById('nav-toggle');
-    const navLinks = document.getElementById('nav-links');
-    if (toggle) {
-      toggle.addEventListener('click', () => {
-        navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
-        toggle.setAttribute('aria-expanded', toggle.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
-      });
-    }
+    var btn = document.getElementById('nav-toggle');
+    var menu = document.getElementById('nav-links');
+    btn.addEventListener('click', function () {
+      var open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    });
   </script>
 
 </body>

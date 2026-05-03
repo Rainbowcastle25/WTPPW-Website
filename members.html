@@ -596,11 +596,21 @@
             strong.textContent = value;
             cell.appendChild(strong);
           } else if (cellIndex === 4) {
+            // Role badge
             var badge = document.createElement('span');
             var badgeClass = getRoleBadgeClass(value);
             badge.className = 'rank-badge' + (badgeClass ? ' ' + badgeClass : '');
             badge.textContent = value;
             cell.appendChild(badge);
+
+            // Top 20 badge
+            if (player.isBadgeActive && player.top20Rank) {
+              var top20Badge = document.createElement('span');
+              top20Badge.className = 'rank-badge rank-badge-top20';
+              top20Badge.textContent = 'Top 20 #' + player.top20Rank;
+              top20Badge.title = 'Ranked #' + player.top20Rank + ' in ' + player.currentTop20Season;
+              cell.appendChild(top20Badge);
+            }
           } else {
             cell.textContent = value;
           }

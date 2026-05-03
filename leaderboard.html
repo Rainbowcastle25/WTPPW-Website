@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Top 20 Leaderboard — Premium Players Worldwide</title>
+  <meta name="description" content="Top 20 squadron battle performers for Premium Players Worldwide (PPW). Leaders recognized for their squadron battle score achievements." />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="ppw-roster-api" content="https://ppw-api.ensignenterprises.com" />
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
+        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="members.html">Members</a></li>
+        <li><a href="battles.html">Battles</a></li>
+        <li><a href="tournaments.html">Tournaments</a></li>
+        <li><a href="leaderboard.html" class="active">Top 20</a></li>
+        <li><a href="recruitment.html">Join Us</a></li>
+        <li><a href="rules.html">Rules</a></li>
+        <li><a href="values.html">Values</a></li>
+      </ul>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== PAGE HERO ===== -->
+  <div class="page-hero">
+    <div class="container">
+      <p class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        Top 20
+      </p>
+      <div class="section-label">Leadership</div>
+      <h1>Squadron Battle Leaderboard</h1>
+      <p class="text-muted mt-2" style="max-width: 520px;">
+        Recognizing the top 20 performers in squadron battles. These leaders are ranked by their squadron battle score and represent the highest skill level in PPW.
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== LEADERBOARD ===== -->
+  <section style="background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+    <div class="container">
+      <div class="section-label">Rankings</div>
+      <h2 class="section-heading">Top 20 Players</h2>
+      <div class="divider"></div>
+
+      <!-- Season Selector -->
+      <div style="margin-bottom: 2rem;">
+        <label for="season-select" style="font-weight: 500; margin-right: 0.5rem;">Select Season:</label>
+        <select id="season-select" class="roster-control" style="padding: 0.5rem; border-radius: 4px; border: 1px solid var(--color-border);">
+          <option>Loading seasons...</option>
+        </select>
+      </div>
+
+      <!-- Season Info -->
+      <div class="card" id="season-info" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <div style="color: var(--color-text-muted);">Loading season information...</div>
+      </div>
+
+      <!-- Leaderboard Table -->
+      <div class="members-table-wrap">
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th style="width: 10%;">Rank</th>
+              <th style="width: 40%;">Player</th>
+              <th style="width: 20%;">Squadron</th>
+              <th style="width: 30%;">SB Rating</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <tr>
+              <td class="text-muted" colspan="4" style="text-align:center; padding: 2rem; color: var(--color-text-muted); font-style: italic;">
+                Loading leaderboard...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand-name">Premium Players Worldwide</div>
+          <p class="footer-brand-desc">
+            A War Thunder squadron dedicated to teamwork, tactical play, and a
+            welcoming community for players of all skill levels.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="recruitment.html">Join Us</a></li>
+            <li><a href="rules.html">Rules</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Info</h4>
+          <ul>
+            <li><a href="recruitment.html#requirements">Requirements</a></li>
+            <li><a href="rules.html#conduct">Code of Conduct</a></li>
+            <li><a href="members.html#officers">Officers</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
+            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
+        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var apiBase = document.querySelector('meta[name="ppw-roster-api"]').content;
+      var seasonSelect = document.getElementById('season-select');
+      var seasonInfo = document.getElementById('season-info');
+      var leaderboardBody = document.getElementById('leaderboard-body');
+
+      function showError(message) {
+        leaderboardBody.innerHTML = '';
+        var row = document.createElement('tr');
+        var cell = document.createElement('td');
+        cell.colSpan = 4;
+        cell.className = 'text-muted';
+        cell.style.textAlign = 'center';
+        cell.style.padding = '2rem';
+        cell.textContent = message;
+        row.appendChild(cell);
+        leaderboardBody.appendChild(row);
+      }
+
+      async function loadLeaderboard(seasonId) {
+        try {
+          var url = new URL(apiBase + '/api/top-20-leaderboard');
+          if (seasonId) {
+            url.searchParams.set('season', seasonId);
+          }
+
+          var response = await fetch(url.toString(), { mode: 'cors' });
+          var data = await response.json();
+
+          if (!data.ok) {
+            showError('Error: ' + (data.error || 'Unknown error'));
+            return;
+          }
+
+          // Populate season dropdown
+          seasonSelect.innerHTML = '';
+          data.availableSeasons.forEach(function (season) {
+            var opt = document.createElement('option');
+            opt.value = season.id;
+            opt.textContent = season.label + ' (' + season.startDate + ' to ' + season.endDate + ')';
+            if (season.id === data.season.id) {
+              opt.selected = true;
+            }
+            seasonSelect.appendChild(opt);
+          });
+
+          // Populate season info
+          var seasonHtml = '<h3>' + data.season.label + '</h3>' +
+            '<p style="margin-bottom: 0.5rem; color: var(--color-text-muted);">' + data.season.startDate + ' to ' + data.season.endDate + '</p>' +
+            (data.season.isActive ? '<p style="margin: 0.5rem 0; color: var(--color-accent);">🔵 Active Season</p>' : '<p style="margin: 0.5rem 0; color: var(--color-text-muted);">Ended</p>');
+          seasonInfo.innerHTML = seasonHtml;
+
+          // Populate leaderboard
+          leaderboardBody.innerHTML = '';
+          if (!data.leaderboard || data.leaderboard.length === 0) {
+            showError('No players in this season\'s top 20 yet.');
+            return;
+          }
+
+          var medals = ['🥇', '🥈', '🥉'];
+
+          data.leaderboard.forEach(function (entry) {
+            var row = document.createElement('tr');
+            var medal = medals[entry.rank - 1] || '';
+
+            var cells = [
+              (medal ? medal + ' ' : '') + entry.rank,
+              entry.playerName,
+              entry.clanTag || '—',
+              entry.sbRating.toLocaleString()
+            ];
+
+            cells.forEach(function (value, idx) {
+              var cell = document.createElement('td');
+              if (idx === 0) {
+                cell.style.fontWeight = '700';
+                cell.style.fontSize = '1.05rem';
+              }
+              if (idx === 1) {
+                var strong = document.createElement('strong');
+                strong.textContent = value;
+                cell.appendChild(strong);
+              } else {
+                cell.textContent = value;
+              }
+              row.appendChild(cell);
+            });
+
+            leaderboardBody.appendChild(row);
+          });
+        } catch (error) {
+          console.error('Leaderboard error:', error);
+          showError('Failed to load leaderboard: ' + (error.message || 'Unknown error'));
+        }
+      }
+
+      // Load initial leaderboard
+      loadLeaderboard();
+
+      // Handle season selection
+      seasonSelect.addEventListener('change', function (e) {
+        loadLeaderboard(e.target.value);
+      });
+
+      // Mobile navigation
+      var navToggle = document.getElementById('nav-toggle');
+      var navLinks = document.getElementById('nav-links');
+      if (navToggle) {
+        navToggle.addEventListener('click', function () {
+          var expanded = navToggle.getAttribute('aria-expanded') === 'true';
+          navToggle.setAttribute('aria-expanded', !expanded);
+          navLinks.style.display = expanded ? '' : 'flex';
+          navLinks.style.flexDirection = 'column';
+          navLinks.style.position = 'absolute';
+          navLinks.style.top = '64px';
+          navLinks.style.left = '0';
+          navLinks.style.right = '0';
+          navLinks.style.background = 'var(--color-surface)';
+          navLinks.style.borderTop = '1px solid var(--color-border)';
+          navLinks.style.padding = '1rem';
+          navLinks.style.gap = '0.5rem';
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

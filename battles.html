@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
   <style>
     .tabs {
       display: flex;
@@ -421,6 +422,7 @@
 
   <script>
     const apiBase = document.querySelector('meta[name="ppw-api-base"]')?.getAttribute('content') || 'http://localhost:8787';
+    const apiKey = document.querySelector('meta[name="ppw-api-key"]')?.getAttribute('content')?.trim() || '';
 
     let currentPage = 1;
     let totalPages = 1;
@@ -446,6 +448,14 @@
       } catch (e) {
         return 'Unknown';
       }
+    }
+
+    function buildApiHeaders(extraHeaders) {
+      const headers = Object.assign({}, extraHeaders || {});
+      if (apiKey) {
+        headers['X-API-Key'] = apiKey;
+      }
+      return headers;
     }
 
     // Tabs
@@ -525,7 +535,10 @@
       container.innerHTML = '<div class="loading">Loading game history...</div>';
 
       try {
-        const response = await fetch(`${apiBase}/api/squadron-battle-log?limit=50`, { cache: 'no-store' });
+        const response = await fetch(`${apiBase}/api/squadron-battle-log?limit=50`, {
+          cache: 'no-store',
+          headers: buildApiHeaders()
+        });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();
@@ -615,7 +628,10 @@
       container.innerHTML = '<div class="loading">Loading player statistics...</div>';
 
       try {
-        const response = await fetch(`${apiBase}/api/battle-stats`, { cache: 'no-store' });
+        const response = await fetch(`${apiBase}/api/battle-stats`, {
+          cache: 'no-store',
+          headers: buildApiHeaders()
+        });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const data = await response.json();

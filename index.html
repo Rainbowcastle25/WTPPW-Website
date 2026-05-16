@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
 </head>
 <body>
 
@@ -108,6 +109,15 @@
       <p class="section-intro">
         The Discord bot imports War Thunder replay summaries and publishes the latest recorded matches here automatically.
       </p>
+      <div class="card battle-log-panel" style="margin-top: 1.5rem;">
+        <div class="battle-log-panel-head">
+          <div class="battle-log-kicker">Live from Discord Bot</div>
+          <div class="battle-log-status" id="battle-log-status" data-state="idle">Waiting for replay data</div>
+        </div>
+        <div class="battle-log-list" id="battle-log-list" aria-live="polite">
+          <div class="battle-log-empty">Loading recent squadron battles...</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -297,7 +307,9 @@
     var btn = document.getElementById('nav-toggle');
     var menu = document.getElementById('nav-links');
     var apiBaseMeta = document.querySelector('meta[name="ppw-api-base"]');
+    var apiKeyMeta = document.querySelector('meta[name="ppw-api-key"]');
     var apiBase = apiBaseMeta ? apiBaseMeta.content.replace(/\/+$/, '') : '';
+    var apiKey = apiKeyMeta ? apiKeyMeta.content.trim() : '';
     var announcementList = document.getElementById('announcement-list');
     var battleLogStatus = document.getElementById('battle-log-status');
     var battleLogList = document.getElementById('battle-log-list');
@@ -376,6 +388,14 @@
         .replace(/>/g, '&gt;');
     }
 
+    function buildApiHeaders(extraHeaders) {
+      var headers = Object.assign({}, extraHeaders || {});
+      if (apiKey) {
+        headers['X-API-Key'] = apiKey;
+      }
+      return headers;
+    }
+
     function pickAnnouncementTag(announcement, index) {
       if (index === 0) {
         return { text: 'Latest', className: 'ann-tag-new' };
@@ -427,7 +447,8 @@
 
       try {
         var response = await fetch(apiBase + '/api/announcements?limit=3', {
-          cache: 'no-store'
+          cache: 'no-store',
+          headers: buildApiHeaders()
         });
 
         if (!response.ok) {
@@ -461,7 +482,8 @@
 
         var response = await fetch(url.toString(), {
           mode: 'cors',
-          cache: 'no-store'
+          cache: 'no-store',
+          headers: buildApiHeaders()
         });
 
         if (!response.ok) {
@@ -551,7 +573,8 @@
         setBattleLogStatus('Loading squadron battles...', 'loading');
         var response = await fetch(apiBase + '/api/squadron-battle-games?limit=6', {
           signal: controller.signal,
-          cache: 'no-store'
+          cache: 'no-store',
+          headers: buildApiHeaders()
         });
 
         if (!response.ok) {

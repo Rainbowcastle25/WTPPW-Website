@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <meta name="ppw-roster-api" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
 </head>
 <body>
 
@@ -305,6 +306,7 @@
     var rosterUpdated = document.getElementById('roster-updated');
     var rosterBody = document.getElementById('roster-body') || document.querySelector('.members-table tbody');
     var rosterApiMeta = document.querySelector('meta[name="ppw-roster-api"]');
+    var rosterApiKeyMeta = document.querySelector('meta[name="ppw-api-key"]');
     var rosterSearch = document.getElementById('roster-search');
     var rosterRoleFilter = document.getElementById('roster-role-filter');
     var rosterSort = document.getElementById('roster-sort');
@@ -320,6 +322,7 @@
     var rosterTopRating = document.getElementById('roster-top-rating');
     var rosterTopMeta = document.getElementById('roster-top-meta');
     var rosterApiBase = rosterApiMeta ? rosterApiMeta.content.replace(/\/+$/, '') : '';
+    var rosterApiKey = rosterApiKeyMeta ? rosterApiKeyMeta.content.trim() : '';
     var rosterMembers = [];
     var rosterState = {
       query: '',
@@ -403,6 +406,14 @@
 
     function formatNumber(value) {
       return value == null || Number.isNaN(value) ? '—' : Number(value).toLocaleString();
+    }
+
+    function buildRosterApiHeaders(extraHeaders) {
+      var headers = Object.assign({}, extraHeaders || {});
+      if (rosterApiKey) {
+        headers['X-API-Key'] = rosterApiKey;
+      }
+      return headers;
     }
 
     function formatAverage(value) {
@@ -652,7 +663,10 @@
       url.searchParams.set('name', 'Premium Players Worldwide');
 
       try {
-        var response = await fetch(url.toString(), { mode: 'cors' });
+        var response = await fetch(url.toString(), {
+          mode: 'cors',
+          headers: buildRosterApiHeaders()
+        });
         var payload = await response.json();
 
         if (!response.ok || payload.ok === false) {

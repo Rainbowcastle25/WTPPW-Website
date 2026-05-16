@@ -25,11 +25,15 @@ The members page fetches the live squadron roster from the Discord bot at the UR
 
 The bot exposes `GET /api/squadron-members` and returns the current squadron list as JSON. The current public host is `https://ppw-api.ensignenterprises.com`. If you move the bot API to a different public host, update that meta tag so GitHub Pages can reach it.
 
+If the bot API is locked down with `ROSTER_API_KEY`, add the same value to a `ppw-api-key` meta tag on the pages that call the API so the browser can send the required `X-API-Key` header.
+
 ## Live Battle Log
 
 The homepage now fetches recent squadron battle summaries from the same bot host and renders the latest recorded matches automatically.
 
 The bot exposes `GET /api/squadron-battle-log` and the homepage reads it from the public API host configured in [index.html](index.html). If the bot host changes, update that meta tag so the battle log keeps loading.
+
+If the API is locked down with `ROSTER_API_KEY`, add the same value to the homepage `ppw-api-key` meta tag so the requests include the auth header.
 
 Rank badge classes used elsewhere on the site are:
 

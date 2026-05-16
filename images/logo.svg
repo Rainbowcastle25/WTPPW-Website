@@ -1,102 +1,73 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 510">
   <defs>
 
-    <!-- Large soft ambient glow cloud -->
+    
     <filter id="ambient" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="24"/>
+      <feGaussianBlur stdDeviation="24"></feGaussianBlur>
     </filter>
 
-    <!-- Crisp edge glow layered over source -->
+    
     <filter id="edge-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b"></feGaussianBlur>
       <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="b"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
       </feMerge>
     </filter>
 
-    <!-- Gold gradient: brighter at top, warm amber at bottom -->
+    
     <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#FFE040"/>
-      <stop offset="55%"  stop-color="#FFB800"/>
-      <stop offset="100%" stop-color="#FF9C00"/>
+      <stop offset="0%" stop-color="#FFE040"></stop>
+      <stop offset="55%" stop-color="#FFB800"></stop>
+      <stop offset="100%" stop-color="#FF9C00"></stop>
     </linearGradient>
 
-    <!-- Purple gradient: vivid top, deep bottom -->
+    
     <linearGradient id="purple" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#B040FF"/>
-      <stop offset="100%" stop-color="#6010C0"/>
+      <stop offset="0%" stop-color="#B040FF"></stop>
+      <stop offset="100%" stop-color="#6010C0"></stop>
     </linearGradient>
 
   </defs>
 
-  <!-- ── Ambient glow cloud (soft, large) ── -->
-  <polygon points="24,24 456,24 240,490"
-           fill="#8B2BE2"
-           filter="url(#ambient)"
-           opacity="0.50"/>
+  
+  <polygon points="24,24 456,24 240,490" fill="#8B2BE2" filter="url(#ambient)" opacity="0.50"></polygon>
 
-  <!-- ── Purple outer triangle (with edge glow pass) ── -->
-  <polygon points="28,28 452,28 240,484" fill="url(#purple)" filter="url(#edge-glow)" opacity="0.85"/>
-  <!-- Second pass: solid fill over glow for clean colour -->
-  <polygon points="28,28 452,28 240,484" fill="url(#purple)"/>
+  
+  <polygon points="28,28 452,28 240,484" fill="url(#purple)" filter="url(#edge-glow)" opacity="0.85"></polygon>
+  
+  <polygon points="28,28 452,28 240,484" fill="url(#purple)"></polygon>
 
-  <!-- ── Concentric echo lines in the purple border band ──
-       Each is a slightly smaller outline triangle; they sit between the outer
-       purple fill and the black border triangle drawn below, so they are only
-       visible in the purple "ring" area.
-  -->
-  <polygon points="35,35 445,35 240,477" fill="none" stroke="#FFD060" stroke-width="2.0" opacity="0.62"/>
-  <polygon points="41,41 439,41 240,470" fill="none" stroke="#FFD060" stroke-width="1.6" opacity="0.50"/>
-  <polygon points="47,47 433,47 240,463" fill="none" stroke="#FFD060" stroke-width="1.3" opacity="0.38"/>
-  <polygon points="53,53 427,53 240,456" fill="none" stroke="#FFD060" stroke-width="1.0" opacity="0.27"/>
-  <polygon points="58,58 422,58 240,450" fill="none" stroke="#FFD060" stroke-width="0.7" opacity="0.18"/>
+  
+  <polygon points="35,35 445,35 240,477" fill="none" stroke="#FFD060" stroke-width="2.0" opacity="0.62"></polygon>
+  <polygon points="41,41 439,41 240,470" fill="none" stroke="#FFD060" stroke-width="1.6" opacity="0.50"></polygon>
+  <polygon points="47,47 433,47 240,463" fill="none" stroke="#FFD060" stroke-width="1.3" opacity="0.38"></polygon>
+  <polygon points="53,53 427,53 240,456" fill="none" stroke="#FFD060" stroke-width="1.0" opacity="0.27"></polygon>
+  <polygon points="58,58 422,58 240,450" fill="none" stroke="#FFD060" stroke-width="0.7" opacity="0.18"></polygon>
 
-  <!-- ── Black border triangle ── -->
-  <polygon points="62,62 418,62 240,445" fill="#000000"/>
+  
+  <polygon points="62,62 418,62 240,445" fill="#000000"></polygon>
 
-  <!-- ── Gold inner triangle ── -->
-  <polygon points="75,75 405,75 240,431" fill="url(#gold)"/>
+  
+  <polygon points="75,75 405,75 240,431" fill="url(#gold)"></polygon>
 
-  <!-- Subtle inner-edge shadow lines (parallel to top, near border) -->
-  <line x1="82"  y1="89"  x2="398" y2="89"  stroke="#00000025" stroke-width="2.0"/>
-  <line x1="89"  y1="103" x2="391" y2="103" stroke="#00000018" stroke-width="1.5"/>
+  
+  <line x1="82" y1="89" x2="398" y2="89" stroke="#00000025" stroke-width="2.0"></line>
+  <line x1="89" y1="103" x2="391" y2="103" stroke="#00000018" stroke-width="1.5"></line>
 
-  <!-- ══════════════════════════════════════
-       LOGO TEXT BLOCK
-       Gold triangle: top (75,75)→(405,75), bottom apex (240,431)
-       Width at y=223:  ~193 px  —  PPW text ~130 px  ✓
-       Width at y=248:  ~170 px  —  lines fit ✓
-       Width at y=282:  ~140 px  —  subtitle ~130 px ✓
-       ══════════════════════════════════════ -->
+  
 
-  <!-- PPW — main lettering -->
-  <text x="240" y="223"
-        text-anchor="middle"
-        fill="#0d0d0d"
-        font-size="90"
-        font-weight="900"
-        font-family="'Oswald','Impact','Arial Black','Arial Narrow',sans-serif"
-        letter-spacing="4">PPW</text>
+  
+  <text x="240" y="223" text-anchor="middle" fill="#0d0d0d" font-size="90" font-weight="900" font-family="&#39;Oswald&#39;,&#39;Impact&#39;,&#39;Arial Black&#39;,&#39;Arial Narrow&#39;,sans-serif" letter-spacing="4">PPW</text>
 
-  <!-- Decoration: ═══ ★ ═══ -->
-  <line x1="160" y1="247" x2="202" y2="247" stroke="#0d0d0d" stroke-width="2.8"/>
-  <line x1="160" y1="256" x2="202" y2="256" stroke="#0d0d0d" stroke-width="2.8"/>
-  <text x="240"  y="261"
-        text-anchor="middle"
-        fill="#0d0d0d"
-        font-size="17"
-        font-family="Arial, sans-serif">★</text>
-  <line x1="278" y1="247" x2="320" y2="247" stroke="#0d0d0d" stroke-width="2.8"/>
-  <line x1="278" y1="256" x2="320" y2="256" stroke="#0d0d0d" stroke-width="2.8"/>
+  
+  <line x1="160" y1="247" x2="202" y2="247" stroke="#0d0d0d" stroke-width="2.8"></line>
+  <line x1="160" y1="256" x2="202" y2="256" stroke="#0d0d0d" stroke-width="2.8"></line>
+  <text x="240" y="261" text-anchor="middle" fill="#0d0d0d" font-size="17" font-family="Arial, sans-serif">★</text>
+  <line x1="278" y1="247" x2="320" y2="247" stroke="#0d0d0d" stroke-width="2.8"></line>
+  <line x1="278" y1="256" x2="320" y2="256" stroke="#0d0d0d" stroke-width="2.8"></line>
 
-  <!-- PREMIUM PLAYERS WORLDWIDE — subtitle -->
-  <text x="240" y="282"
-        text-anchor="middle"
-        fill="#0d0d0d"
-        font-size="8"
-        font-family="'Oswald','Arial Narrow',Arial,sans-serif"
-        letter-spacing="0.5"
-        font-weight="600">PREMIUM PLAYERS WORLDWIDE</text>
+  
+  <text x="240" y="282" text-anchor="middle" fill="#0d0d0d" font-size="8" font-family="&#39;Oswald&#39;,&#39;Arial Narrow&#39;,Arial,sans-serif" letter-spacing="0.5" font-weight="600">PREMIUM PLAYERS WORLDWIDE</text>
 
 </svg>

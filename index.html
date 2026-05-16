@@ -654,7 +654,7 @@
 
       try {
         setBattleLogStatus('Loading…', 'loading');
-        var response = await fetch(apiBase + '/api/squadron-battle-log?limit=5', {
+        var response = await fetch(apiBase + '/api/squadron-battle-log?limit=5&tag=WTPPW', {
           signal: controller.signal,
           cache: 'no-store',
           headers: buildApiHeaders()
@@ -665,7 +665,12 @@
         }
 
         var data = await response.json();
-        renderBattleLog(data.recentReplays || []);
+        var raw = data.recentReplays || [];
+        var games = raw.filter(function (g) {
+          var label = (g.leftLabel || '').toLowerCase();
+          return label.indexOf('wtppw') !== -1 || label.indexOf('premium players worldwide') !== -1;
+        });
+        renderBattleLog(games);
         setBattleLogStatus('Live', 'ready');
       } catch (error) {
         console.error('[Battle Log] Failed to load games:', error);

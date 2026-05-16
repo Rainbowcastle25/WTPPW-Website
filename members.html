@@ -579,12 +579,44 @@
       rosterStatus.setAttribute('data-state', mode || 'idle');
     }
 
+    function getRatingColor(rating, max) {
+      if (rating == null || max === 0) return null;
+      var pct = rating / max;
+      var stops = [
+        [0.00, 136, 136, 136],
+        [0.35, 224, 224, 224],
+        [0.55,  39, 174,  96],
+        [0.70, 124,  92, 252],
+        [0.85, 155,  59, 242],
+        [1.00, 255, 184,   0]
+      ];
+      for (var i = 1; i < stops.length; i++) {
+        if (pct <= stops[i][0]) {
+          var t = (pct - stops[i-1][0]) / (stops[i][0] - stops[i-1][0]);
+          var r = Math.round(stops[i-1][1] + t * (stops[i][1] - stops[i-1][1]));
+          var g = Math.round(stops[i-1][2] + t * (stops[i][2] - stops[i-1][2]));
+          var b = Math.round(stops[i-1][3] + t * (stops[i][3] - stops[i-1][3]));
+          return 'rgb(' + r + ',' + g + ',' + b + ')';
+        }
+      }
+      return 'rgb(255,184,0)';
+    }
+
     function renderRoster(players) {
       rosterBody.innerHTML = '';
       if (!players.length) {
         renderEmptyState('No squadron members were returned by the bot.');
         return;
       }
+
+      var ranked = players
+        .filter(function(p) { return p.personalClanRating != null; })
+        .slice()
+        .sort(function(a, b) { return b.personalClanRating - a.personalClanRating; });
+      var maxRating = ranked.length ? ranked[0].personalClanRating : 0;
+      var top1Name = ranked[0] ? ranked[0].name : null;
+      var top2Name = ranked[1] ? ranked[1].name : null;
+      var top3Name = ranked[2] ? ranked[2].name : null;
 
       players.forEach(function (player, index) {
         var row = document.createElement('tr');
@@ -603,7 +635,28 @@
             cell.className = 'text-muted';
           }
           if (cellIndex === 1) {
+            var topClass = '';
+            var topIcon = null;
+            if (player.name === top1Name) {
+              topClass = 'rating-top1';
+              topIcon = '👑';
+            } else if (player.name === top2Name) {
+              topClass = 'rating-top2';
+              topIcon = '🥈';
+            } else if (player.name === top3Name) {
+              topClass = 'rating-top3';
+              topIcon = '🥉';
+            }
+            if (topIcon) {
+              var iconSpan = document.createElement('span');
+              iconSpan.className = 'top-icon';
+              iconSpan.textContent = topIcon;
+              cell.appendChild(iconSpan);
+            }
             var strong = document.createElement('strong');
+            if (topClass) strong.className = topClass;
+            var nameColor = getRatingColor(player.personalClanRating, maxRating);
+            if (nameColor) strong.style.color = nameColor;
             strong.textContent = value;
             cell.appendChild(strong);
           } else if (cellIndex === 4) {

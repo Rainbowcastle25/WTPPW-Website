@@ -1019,7 +1019,7 @@
       container.innerHTML = '<div class="battles-loading"><div class="battles-loading-spinner"></div><div>Loading battle history…</div></div>';
 
       try {
-        const response = await fetch(`${apiBase}/api/squadron-battle-log?limit=50`, {
+        const response = await fetch(`${apiBase}/api/squadron-battle-log?limit=50&tag=WTPPW`, {
           cache: 'no-store',
           headers: buildApiHeaders()
         });
@@ -1029,7 +1029,11 @@
         }
 
         const data = await response.json();
-        allGames = Array.isArray(data.recentReplays) ? data.recentReplays : [];
+        const raw = Array.isArray(data.recentReplays) ? data.recentReplays : [];
+        allGames = raw.filter(function (g) {
+          const label = (g.leftLabel || '').toLowerCase();
+          return label.includes('wtppw') || label.includes('premium players worldwide');
+        });
 
         updateSummaryStats(allGames);
         populateMapFilter(allGames);

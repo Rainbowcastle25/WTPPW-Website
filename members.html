@@ -716,9 +716,13 @@
       var url = new URL('/api/squadron-members', rosterApiBase);
       url.searchParams.set('name', 'Premium Players Worldwide');
 
+      var controller = new AbortController();
+      var timer = setTimeout(function () { controller.abort(); }, 15000);
+
       try {
         var response = await fetch(url.toString(), {
           mode: 'cors',
+          signal: controller.signal,
           headers: buildRosterApiHeaders()
         });
         var payload = await response.json();
@@ -730,18 +734,28 @@
         rosterMembers = Array.isArray(payload.players) ? payload.players.map(normalizePlayer) : [];
         setRoleOptions(rosterMembers);
         renderRosterView();
+        var statusDetail = payload.stale
+          ? 'Live refresh failed — showing cached data from ' + new Date(payload.fetchedAt).toLocaleString() + ' · ' + rosterMembers.length + ' members'
+          : 'Last updated ' + new Date(payload.fetchedAt).toLocaleString() + ' · ' + rosterMembers.length + ' members loaded';
         setStatus(
           payload.squadronName || 'Premium Players Worldwide',
-          'Last updated ' + new Date(payload.fetchedAt).toLocaleString() + ' · ' + rosterMembers.length + ' members loaded',
-          'ready'
+          statusDetail,
+          payload.stale ? 'warn' : 'ready'
         );
       } catch (error) {
+        var msg = error.name === 'AbortError'
+          ? 'Request timed out — the bot may be busy or unreachable.'
+          : (error.message && error.message !== 'Failed to fetch'
+              ? error.message
+              : 'Could not reach the roster API — check your connection or try again later.');
         console.error('Failed to load PPW roster:', error);
-        setStatus('Roster unavailable', error.message || 'The bot could not be reached.', 'error');
+        setStatus('Roster unavailable', msg, 'error');
         rosterMembers = [];
         setSummaryStats([], []);
-        renderEmptyState(error.message || 'The bot could not be reached.');
-        rosterUpdated.textContent = error.message || 'The bot could not be reached.';
+        renderEmptyState(msg);
+        rosterUpdated.textContent = msg;
+      } finally {
+        clearTimeout(timer);
       }
     }
 

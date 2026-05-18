@@ -471,8 +471,11 @@
     }
 
     function compareRole(left, right) {
-      var leftPriority = rolePriority[left] == null ? 99 : rolePriority[left];
-      var rightPriority = rolePriority[right] == null ? 99 : rolePriority[right];
+      function toTitle(s) {
+        return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
+      }
+      var leftPriority = rolePriority[toTitle(left)] == null ? 99 : rolePriority[toTitle(left)];
+      var rightPriority = rolePriority[toTitle(right)] == null ? 99 : rolePriority[toTitle(right)];
 
       if (leftPriority < rightPriority) {
         return -1;

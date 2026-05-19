@@ -858,7 +858,7 @@
         return 'badge-private';
       }
 
-      function buildProfileHtml(playerName, rosterPlayer, stats, profile) {
+      function buildProfileHtml(playerName, rosterPlayer, stats, profile, airEloData, groundEloData) {
         var role = rosterPlayer ? rosterPlayer.role : '';
         var joinDate = rosterPlayer ? rosterPlayer.dateOfEntry : '';
         var clanRating = rosterPlayer ? rosterPlayer.personalClanRating : null;
@@ -874,6 +874,11 @@
         var totalGroundKills = hasStats ? (stats.totalGroundKills || 0) : 0;
         var achievements = hasStats && Array.isArray(stats.achievements) ? stats.achievements : [];
         var recentMatches = hasStats && Array.isArray(stats.recentMatches) ? stats.recentMatches : [];
+
+        var airEloHist = airEloData && Array.isArray(airEloData.history) ? airEloData.history : [];
+        var groundEloHist = groundEloData && Array.isArray(groundEloData.history) ? groundEloData.history : [];
+        var currentAirElo = airEloHist.length > 0 ? Math.round(airEloHist[airEloHist.length - 1].eloAfter) : null;
+        var currentGroundElo = groundEloHist.length > 0 ? Math.round(groundEloHist[groundEloHist.length - 1].eloAfter) : null;
 
         var html = '';
 
@@ -909,6 +914,12 @@
         }
         if (activity != null) {
           html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(activity) + '</span><span class="modal-stat-label">Activity</span></div>';
+        }
+        if (currentAirElo != null) {
+          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(currentAirElo) + '</span><span class="modal-stat-label">Air ELO</span></div>';
+        }
+        if (currentGroundElo != null) {
+          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(currentGroundElo) + '</span><span class="modal-stat-label">Ground ELO</span></div>';
         }
         html += '</div>';
 
@@ -994,21 +1005,27 @@
         modalContent.innerHTML = '<div class="modal-loading"><span class="modal-spinner"></span>Loading profile…</div>';
 
         if (!modalApiBase) {
-          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, null, null);
+          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, null, null, null, null);
           return;
         }
 
         var statsUrl = new URL('/api/player-stats/' + encodeURIComponent(playerName), modalApiBase).toString();
         var profileUrl = new URL('/api/member/' + encodeURIComponent(playerName), modalApiBase).toString();
+        var airEloUrl = new URL('/api/elo-history?role=air&limit=100&player=' + encodeURIComponent(playerName), modalApiBase).toString();
+        var groundEloUrl = new URL('/api/elo-history?role=ground&limit=100&player=' + encodeURIComponent(playerName), modalApiBase).toString();
         var headers = { 'X-API-Key': modalApiKey };
 
         Promise.all([
           fetch(statsUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; }),
-          fetch(profileUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; })
+          fetch(profileUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; }),
+          fetch(airEloUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; }),
+          fetch(groundEloUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; })
         ]).then(function (results) {
           var stats = results[0];
           var profile = results[1];
-          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, stats, profile);
+          var airElo = results[2];
+          var groundElo = results[3];
+          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, stats, profile, airElo, groundElo);
         });
       };
     })();

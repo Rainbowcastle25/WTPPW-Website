@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELO Leaderboard — PPW Squadron</title>
+  <meta name="description" content="PPW squadron ELO ratings leaderboard for air and ground roles, calculated from War Thunder replay data." />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
+  <style>
+    /* ── ELO page overrides ── */
+
+    .elo-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: 2.5rem;
+    }
+
+    .elo-tab-btn {
+      position: relative;
+      padding: 0.85rem 1.6rem;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--color-text-muted);
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color var(--transition), border-color var(--transition), background var(--transition);
+      margin-bottom: -1px;
+    }
+
+    .elo-tab-btn:hover {
+      color: var(--color-text);
+      background: rgba(255,184,0,0.04);
+    }
+
+    .elo-tab-btn.active {
+      color: var(--color-accent);
+      border-bottom-color: var(--color-accent);
+      background: rgba(255,184,0,0.05);
+    }
+
+    .elo-season-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+      padding: 0.9rem 1.25rem;
+      background: rgba(255,184,0,0.04);
+      border: 1px solid rgba(255,184,0,0.18);
+      border-left: 3px solid var(--color-accent);
+      border-radius: var(--radius);
+    }
+
+    .elo-season-label {
+      font-family: var(--font-heading);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .elo-season-value {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+    }
+
+    .elo-provisional-note {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+    }
+
+    .elo-table-wrap {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .elo-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .elo-table th {
+      background: var(--color-surface-2);
+      color: var(--color-text-muted);
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.9rem 1.25rem;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+      white-space: nowrap;
+    }
+
+    .elo-table th.right { text-align: right; }
+
+    .elo-table td {
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 0.95rem;
+      vertical-align: middle;
+      color: var(--color-text);
+    }
+
+    .elo-table tr:last-child td { border-bottom: none; }
+    .elo-table tr:hover td { background: rgba(139,43,226,0.05); }
+
+    .elo-rank {
+      font-family: var(--font-heading);
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      min-width: 36px;
+    }
+
+    .elo-rank-1 { color: #FFB800; }
+    .elo-rank-2 { color: #C0C0C0; }
+    .elo-rank-3 { color: #CD7F32; }
+
+    .elo-player-name { font-weight: 600; color: var(--color-heading); }
+
+    .elo-value {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      color: var(--color-accent);
+      text-align: right;
+    }
+
+    .elo-provisional { color: var(--color-text-muted); font-size: 0.82rem; }
+
+    .elo-wld {
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      letter-spacing: 0.05em;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .elo-wld .w { color: var(--color-green); }
+    .elo-wld .l { color: var(--color-red); }
+    .elo-wld .d { color: var(--color-text-muted); }
+
+    .elo-gp { text-align: right; color: var(--color-text-muted); font-size: 0.9rem; }
+    .elo-winrate { text-align: right; font-family: var(--font-heading); font-size: 0.88rem; }
+
+    .elo-skeleton-cell {
+      height: 14px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--color-surface-2) 25%, rgba(255,255,255,0.05) 50%, var(--color-surface-2) 75%);
+      background-size: 200% 100%;
+      animation: elo-shimmer 1.4s ease-in-out infinite;
+    }
+
+    @keyframes elo-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .elo-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .elo-pagination-info {
+      font-family: var(--font-heading);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .elo-pagination-controls { display: flex; gap: 0.5rem; align-items: center; }
+
+    .elo-page-btn {
+      height: 34px;
+      min-width: 34px;
+      padding: 0 0.6rem;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      color: var(--color-text-muted);
+      font-family: var(--font-heading);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: color var(--transition), background var(--transition), border-color var(--transition);
+    }
+
+    .elo-page-btn:hover:not(:disabled) {
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+      background: rgba(255,184,0,0.06);
+    }
+
+    .elo-page-btn.active {
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+      background: rgba(255,184,0,0.08);
+    }
+
+    .elo-page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .elo-empty {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border: 1px dashed rgba(255,184,0,0.2);
+      border-radius: var(--radius);
+      color: var(--color-text-muted);
+      background: rgba(255,184,0,0.02);
+    }
+
+    .elo-empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5; }
+
+    @media (max-width: 700px) {
+      .elo-table th:nth-child(5),
+      .elo-table td:nth-child(5) { display: none; }
+      .elo-season-bar { flex-direction: column; align-items: flex-start; }
+      .elo-pagination { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 480px) {
+      .elo-table th:nth-child(4),
+      .elo-table td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="nav-brand">
+        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
+        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="members.html">Members</a></li>
+        <li><a href="battles.html">Battles</a></li>
+        <li><a href="elo.html" class="active">ELO</a></li>
+        <li><a href="tournaments.html">Tournaments</a></li>
+        <li><a href="recruitment.html">Join Us</a></li>
+        <li><a href="rules.html">Rules</a></li>
+        <li><a href="values.html">Values</a></li>
+      </ul>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== PAGE HERO ===== -->
+  <div class="page-hero">
+    <div class="container">
+      <p class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        ELO Leaderboard
+      </p>
+      <div class="section-label">Competitive Rankings</div>
+      <h1>ELO Leaderboard</h1>
+      <p class="text-muted mt-2" style="max-width: 540px;">
+        Squadron ELO ratings calculated from War Thunder replay data. Rankings reset each season.
+        Players with fewer than 15 matches are marked provisional (~).
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <section>
+    <div class="container">
+
+      <div class="elo-season-bar">
+        <div>
+          <div class="elo-season-label">Current Season</div>
+          <div class="elo-season-value" id="elo-season-display">Loading&hellip;</div>
+        </div>
+        <div class="elo-provisional-note">~ = provisional (fewer than 15 matches)</div>
+      </div>
+
+      <div class="elo-tabs">
+        <button class="elo-tab-btn active" data-role="air">&#9992; Air</button>
+        <button class="elo-tab-btn" data-role="ground">&#128737; Ground</button>
+      </div>
+
+      <div class="elo-table-wrap">
+        <table class="elo-table" id="elo-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th class="right">ELO</th>
+              <th class="right">W / L / D</th>
+              <th class="right">Win Rate</th>
+              <th class="right">Matches</th>
+            </tr>
+          </thead>
+          <tbody id="elo-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="elo-pagination" id="elo-pagination" style="display:none;">
+        <div class="elo-pagination-info" id="elo-pagination-info"></div>
+        <div class="elo-pagination-controls" id="elo-pagination-controls"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand-name">Premium Players Worldwide</div>
+          <p class="footer-brand-desc">
+            A War Thunder squadron and familia since 2020 — built on teamwork,
+            competitive SQBs, Tournament Service System events, and a friendly community.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="recruitment.html">Join Us</a></li>
+            <li><a href="rules.html">Rules</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Info</h4>
+          <ul>
+            <li><a href="recruitment.html#requirements">Requirements</a></li>
+            <li><a href="rules.html#conduct">Code of Conduct</a></li>
+            <li><a href="members.html#officers">Officers</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
+            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
+        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const apiBaseMeta = document.querySelector('meta[name="ppw-api-base"]');
+    const apiKeyMeta  = document.querySelector('meta[name="ppw-api-key"]');
+    const apiBase = apiBaseMeta ? apiBaseMeta.getAttribute('content').replace(/\/+$/, '') : 'http://localhost:8787';
+    const apiKey  = apiKeyMeta  ? apiKeyMeta.getAttribute('content').trim() : '';
+
+    let currentRole = 'air';
+    let currentPage = 1;
+    let currentSeason = null;
+    const PAGE_SIZE = 10;
+
+    function escapeText(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function formatSeason(id) {
+      const m = String(id || '').match(/^(\d{4})-S(\d+)$/);
+      if (m) return 'Season ' + m[2] + ' — ' + m[1];
+      return id || 'Unknown';
+    }
+
+    function winRate(wins, matches) {
+      if (!matches) return '—';
+      return Math.round((wins / matches) * 100) + '%';
+    }
+
+    function renderSkeleton() {
+      var tbody = document.getElementById('elo-tbody');
+      var rows = '';
+      for (var i = 0; i < PAGE_SIZE; i++) {
+        rows += '<tr>'
+          + '<td><div class="elo-skeleton-cell" style="width:28px"></div></td>'
+          + '<td><div class="elo-skeleton-cell" style="width:140px"></div></td>'
+          + '<td><div class="elo-skeleton-cell" style="width:60px;margin-left:auto"></div></td>'
+          + '<td><div class="elo-skeleton-cell" style="width:80px;margin-left:auto"></div></td>'
+          + '<td><div class="elo-skeleton-cell" style="width:50px;margin-left:auto"></div></td>'
+          + '<td><div class="elo-skeleton-cell" style="width:40px;margin-left:auto"></div></td>'
+          + '</tr>';
+      }
+      tbody.innerHTML = rows;
+      document.getElementById('elo-pagination').style.display = 'none';
+    }
+
+    function renderTable(data) {
+      var tbody = document.getElementById('elo-tbody');
+      var seasonEl = document.getElementById('elo-season-display');
+
+      if (data.season) {
+        currentSeason = data.season;
+        seasonEl.textContent = formatSeason(data.season);
+      }
+
+      if (!data.leaderboard || data.leaderboard.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">'
+          + '<div class="elo-empty">'
+          + '<div class="elo-empty-icon">&#128202;</div>'
+          + '<div>No ELO data available for this role and season yet.</div>'
+          + '</div></td></tr>';
+        document.getElementById('elo-pagination').style.display = 'none';
+        return;
+      }
+
+      tbody.innerHTML = data.leaderboard.map(function(entry) {
+        var rankClass = entry.rank <= 3 ? ' elo-rank-' + entry.rank : '';
+        var draws = entry.matches_played - entry.wins - entry.losses;
+        var eloDisplay = entry.provisional
+          ? '<span class="elo-provisional">~' + entry.elo + '</span>'
+          : String(entry.elo);
+        var wr = winRate(entry.wins, entry.matches_played);
+
+        return '<tr>'
+          + '<td class="elo-rank' + rankClass + '">#' + entry.rank + '</td>'
+          + '<td class="elo-player-name">' + escapeText(entry.player_name) + '</td>'
+          + '<td class="elo-value">' + eloDisplay + '</td>'
+          + '<td class="elo-wld"><span class="w">' + entry.wins + 'W</span>'
+          + ' <span class="l">' + entry.losses + 'L</span>'
+          + ' <span class="d">' + draws + 'D</span></td>'
+          + '<td class="elo-winrate">' + wr + '</td>'
+          + '<td class="elo-gp">' + entry.matches_played + '</td>'
+          + '</tr>';
+      }).join('');
+
+      renderPagination(data.page, data.totalPages, data.total);
+    }
+
+    function renderPagination(page, totalPages, total) {
+      var paginationEl = document.getElementById('elo-pagination');
+      var infoEl = document.getElementById('elo-pagination-info');
+      var controlsEl = document.getElementById('elo-pagination-controls');
+
+      if (totalPages <= 1) {
+        paginationEl.style.display = 'none';
+        return;
+      }
+
+      infoEl.textContent = total + ' players total';
+
+      var controls = '<button class="elo-page-btn" id="elo-prev"' + (page <= 1 ? ' disabled' : '') + '>&#8249; Prev</button>';
+
+      var start = Math.max(1, page - 2);
+      var end = Math.min(totalPages, page + 2);
+      if (start > 1) controls += '<button class="elo-page-btn" data-page="1">1</button>';
+      if (start > 2) controls += '<span style="color:var(--color-text-muted);padding:0 0.25rem">&hellip;</span>';
+      for (var p = start; p <= end; p++) {
+        controls += '<button class="elo-page-btn' + (p === page ? ' active' : '') + '" data-page="' + p + '">' + p + '</button>';
+      }
+      if (end < totalPages - 1) controls += '<span style="color:var(--color-text-muted);padding:0 0.25rem">&hellip;</span>';
+      if (end < totalPages) controls += '<button class="elo-page-btn" data-page="' + totalPages + '">' + totalPages + '</button>';
+      controls += '<button class="elo-page-btn" id="elo-next"' + (page >= totalPages ? ' disabled' : '') + '>Next &#8250;</button>';
+
+      controlsEl.innerHTML = controls;
+      paginationEl.style.display = 'flex';
+
+      controlsEl.querySelectorAll('[data-page]').forEach(function(btn) {
+        btn.addEventListener('click', function() { goToPage(parseInt(btn.getAttribute('data-page'), 10)); });
+      });
+      var prevBtn = document.getElementById('elo-prev');
+      var nextBtn = document.getElementById('elo-next');
+      if (prevBtn) prevBtn.addEventListener('click', function() { goToPage(page - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', function() { goToPage(page + 1); });
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      loadLeaderboard(currentRole, currentPage);
+    }
+
+    async function loadLeaderboard(role, page) {
+      renderSkeleton();
+      var url = apiBase + '/api/elo-leaderboard?role=' + role + '&page=' + page + '&limit=' + PAGE_SIZE;
+      if (currentSeason) url += '&season=' + encodeURIComponent(currentSeason);
+
+      try {
+        var response = await fetch(url, {
+          cache: 'no-store',
+          headers: apiKey ? { 'X-API-Key': apiKey } : {}
+        });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        var data = await response.json();
+        renderTable(data);
+      } catch (err) {
+        console.error('[ELO] Failed to load leaderboard:', err);
+        document.getElementById('elo-tbody').innerHTML = '<tr><td colspan="6">'
+          + '<div class="elo-empty">'
+          + '<div class="elo-empty-icon">&#9888;&#65039;</div>'
+          + '<div>Could not load leaderboard. The API may be offline.</div>'
+          + '</div></td></tr>';
+        document.getElementById('elo-season-display').textContent = 'Unavailable';
+        document.getElementById('elo-pagination').style.display = 'none';
+      }
+    }
+
+    document.querySelectorAll('.elo-tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.elo-tab-btn').forEach(function(b) {
+          b.classList.toggle('active', b === btn);
+        });
+        currentRole = btn.getAttribute('data-role');
+        currentPage = 1;
+        currentSeason = null;
+        loadLeaderboard(currentRole, currentPage);
+      });
+    });
+
+    (function() {
+      var toggle = document.getElementById('nav-toggle');
+      var menu   = document.getElementById('nav-links');
+      if (toggle && menu) {
+        toggle.addEventListener('click', function() {
+          var expanded = toggle.getAttribute('aria-expanded') === 'true';
+          toggle.setAttribute('aria-expanded', String(!expanded));
+          menu.classList.toggle('open', !expanded);
+        });
+      }
+    }());
+
+    loadLeaderboard(currentRole, currentPage);
+  </script>
+
+</body>
+</html>

@@ -674,6 +674,8 @@
           row.appendChild(cell);
         });
 
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', function () { openPlayerProfile(player.name); });
         rosterBody.appendChild(row);
       });
     }
@@ -799,6 +801,216 @@
     updateDirectionButton();
     renderEmptyState('Loading live roster from the bot...');
     loadRoster();
+  </script>
+
+  <!-- ===== PLAYER PROFILE MODAL ===== -->
+  <div id="player-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-player-name">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close-btn" aria-label="Close profile">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('player-modal');
+      var modalContent = document.getElementById('modal-content');
+      var modalCloseBtn = document.getElementById('modal-close-btn');
+      var modalApiBase = document.querySelector('meta[name="ppw-roster-api"]')
+        ? document.querySelector('meta[name="ppw-roster-api"]').content
+        : '';
+      var modalApiKey = document.querySelector('meta[name="ppw-api-key"]')
+        ? document.querySelector('meta[name="ppw-api-key"]').content
+        : '';
+
+      function closeModal() {
+        modal.classList.remove('modal-open');
+        document.body.style.overflow = '';
+      }
+
+      modalCloseBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      function esc(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function fmt(n) {
+        if (n == null || n === '' || isNaN(Number(n))) return '—';
+        return Number(n).toLocaleString();
+      }
+
+      function getRoleBadgeClassModal(role) {
+        var r = (role || '').toLowerCase();
+        if (r === 'commander') return 'badge-commander';
+        if (r === 'officer') return 'badge-officer';
+        if (r === 'sergeant') return 'badge-sergeant';
+        return 'badge-private';
+      }
+
+      function buildProfileHtml(playerName, rosterPlayer, stats, profile) {
+        var role = rosterPlayer ? rosterPlayer.role : '';
+        var joinDate = rosterPlayer ? rosterPlayer.dateOfEntry : '';
+        var clanRating = rosterPlayer ? rosterPlayer.personalClanRating : null;
+        var activity = rosterPlayer ? rosterPlayer.activity : null;
+        var wtRank = profile && profile.rank ? profile.rank : null;
+        var profileUrl = profile && profile.profileUrl ? profile.profileUrl : null;
+        var wtMedals = profile && Array.isArray(profile.medals) ? profile.medals : [];
+
+        var hasStats = stats && stats.ok !== false;
+        var totalGames = hasStats ? (stats.totalGames || 0) : 0;
+        var kdRatio = hasStats ? (stats.kdRatio != null ? stats.kdRatio : '—') : '—';
+        var totalAirKills = hasStats ? (stats.totalAirKills || 0) : 0;
+        var totalGroundKills = hasStats ? (stats.totalGroundKills || 0) : 0;
+        var achievements = hasStats && Array.isArray(stats.achievements) ? stats.achievements : [];
+        var recentMatches = hasStats && Array.isArray(stats.recentMatches) ? stats.recentMatches : [];
+
+        var html = '';
+
+        // Header
+        html += '<div class="modal-header">';
+        html += '<div class="modal-header-left">';
+        html += '<h2 id="modal-player-name" class="modal-player-name">' + esc(playerName) + '</h2>';
+        html += '<div class="modal-header-meta">';
+        if (role) {
+          html += '<span class="rank-badge ' + getRoleBadgeClassModal(role) + '">' + esc(role) + '</span>';
+        }
+        if (wtRank) {
+          html += '<span class="modal-wt-rank">⚡ ' + esc(wtRank) + '</span>';
+        }
+        if (joinDate) {
+          html += '<span class="modal-join-date">Joined ' + esc(joinDate) + '</span>';
+        }
+        html += '</div>';
+        html += '</div>';
+        if (profileUrl) {
+          html += '<a class="btn btn-outline modal-wt-link" href="' + esc(profileUrl) + '" target="_blank" rel="noopener">WT Profile</a>';
+        }
+        html += '</div>';
+
+        // Stats row
+        html += '<div class="modal-stats-grid">';
+        html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(totalGames) + '</span><span class="modal-stat-label">Games</span></div>';
+        html += '<div class="modal-stat"><span class="modal-stat-value">' + (kdRatio !== '—' ? kdRatio : '—') + '</span><span class="modal-stat-label">K/D</span></div>';
+        html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(totalAirKills) + '</span><span class="modal-stat-label">Air Kills</span></div>';
+        html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(totalGroundKills) + '</span><span class="modal-stat-label">Ground Kills</span></div>';
+        if (clanRating != null) {
+          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(clanRating) + '</span><span class="modal-stat-label">Clan Rating</span></div>';
+        }
+        if (activity != null) {
+          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(activity) + '</span><span class="modal-stat-label">Activity</span></div>';
+        }
+        html += '</div>';
+
+        // Achievements
+        if (achievements.length > 0) {
+          html += '<div class="modal-section">';
+          html += '<h3 class="modal-section-title">Achievements</h3>';
+          html += '<div class="achievement-grid">';
+          achievements.forEach(function (a) {
+            html += '<div class="achievement-chip" title="' + esc(a.description) + '">';
+            html += '<span class="achievement-icon">' + esc(a.icon) + '</span>';
+            html += '<span class="achievement-name">' + esc(a.name) + '</span>';
+            if (a.description && a.description.includes('•')) {
+              var label = a.description.split('•').pop().trim();
+              html += '<span class="achievement-season">' + esc(label) + '</span>';
+            }
+            html += '</div>';
+          });
+          html += '</div>';
+          html += '</div>';
+        }
+
+        // War Thunder medals from profile
+        var realMedals = wtMedals.filter(function (m) { return m.icon && m.icon.startsWith('http'); });
+        if (realMedals.length > 0) {
+          html += '<div class="modal-section">';
+          html += '<h3 class="modal-section-title">War Thunder Medals</h3>';
+          html += '<div class="wt-medals-row">';
+          realMedals.forEach(function (m) {
+            html += '<img class="wt-medal-icon" src="' + esc(m.icon) + '" alt="' + esc(m.name || 'Medal') + '" title="' + esc(m.name || '') + '" loading="lazy" />';
+          });
+          html += '</div>';
+          html += '</div>';
+        }
+
+        // Recent matches
+        if (recentMatches.length > 0) {
+          html += '<div class="modal-section">';
+          html += '<h3 class="modal-section-title">Recent Matches</h3>';
+          html += '<div class="modal-matches-wrap">';
+          html += '<table class="modal-matches-table">';
+          html += '<thead><tr><th>Map</th><th>Vehicle</th><th>✈</th><th>💣</th><th>🤝</th><th>☠</th><th>Score</th><th>Result</th></tr></thead>';
+          html += '<tbody>';
+          recentMatches.forEach(function (m) {
+            var resultClass = m.won ? 'match-win' : (m.winnerSide === 'tie' ? 'match-tie' : 'match-loss');
+            var resultLabel = m.won ? 'W' : (m.winnerSide === 'tie' ? 'T' : 'L');
+            var mapShort = (m.mapName || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+            html += '<tr>';
+            html += '<td class="match-map">' + esc(mapShort) + '</td>';
+            html += '<td class="match-vehicle">' + esc(m.vehicle || '—') + '</td>';
+            html += '<td>' + fmt(m.airKills) + '</td>';
+            html += '<td>' + fmt(m.groundKills) + '</td>';
+            html += '<td>' + fmt(m.assists) + '</td>';
+            html += '<td>' + fmt(m.deaths) + '</td>';
+            html += '<td>' + fmt(m.score) + '</td>';
+            html += '<td><span class="match-result ' + resultClass + '">' + resultLabel + '</span></td>';
+            html += '</tr>';
+          });
+          html += '</tbody></table>';
+          html += '</div>';
+          html += '</div>';
+        }
+
+        if (!hasStats && totalGames === 0 && achievements.length === 0 && recentMatches.length === 0) {
+          html += '<p class="modal-no-data">No replay data found for this player yet.</p>';
+        }
+
+        return html;
+      }
+
+      window.openPlayerProfile = function (playerName) {
+        modal.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+
+        // Find from current roster state
+        var rosterPlayer = null;
+        if (typeof rosterMembers !== 'undefined') {
+          rosterPlayer = rosterMembers.find(function (p) {
+            return p.name === playerName;
+          }) || null;
+        }
+
+        modalContent.innerHTML = '<div class="modal-loading"><span class="modal-spinner"></span>Loading profile…</div>';
+
+        if (!modalApiBase) {
+          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, null, null);
+          return;
+        }
+
+        var statsUrl = new URL('/api/player-stats/' + encodeURIComponent(playerName), modalApiBase).toString();
+        var profileUrl = new URL('/api/member/' + encodeURIComponent(playerName), modalApiBase).toString();
+        var headers = { 'X-API-Key': modalApiKey };
+
+        Promise.all([
+          fetch(statsUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; }),
+          fetch(profileUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; })
+        ]).then(function (results) {
+          var stats = results[0];
+          var profile = results[1];
+          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, stats, profile);
+        });
+      };
+    })();
   </script>
 </body>
 </html>

@@ -123,6 +123,33 @@
       outline: none;
     }
 
+    #player-search,
+    #squadron-search {
+      height: 34px;
+      padding: 0 0.75rem;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      color: var(--color-text);
+      font-family: var(--font-heading);
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      transition: border-color var(--transition);
+      min-width: 150px;
+    }
+
+    #player-search:hover, #player-search:focus,
+    #squadron-search:hover, #squadron-search:focus {
+      border-color: var(--color-accent);
+      outline: none;
+    }
+
+    #player-search::placeholder,
+    #squadron-search::placeholder {
+      color: var(--color-text-muted);
+      opacity: 0.7;
+    }
+
     .elo-table-wrap {
       border: 1px solid var(--color-border);
       border-radius: var(--radius);
@@ -377,7 +404,10 @@
       </div>
 
       <div class="elo-filter-bar">
+        <span class="elo-filter-label">Player</span>
+        <input type="text" id="player-search" placeholder="Search player…" autocomplete="off" />
         <span class="elo-filter-label">Squadron</span>
+        <input type="text" id="squadron-search" placeholder="Filter list…" autocomplete="off" style="min-width:120px" />
         <select class="elo-squadron-select" id="elo-squadron-filter">
           <option value="">All Squadrons</option>
         </select>
@@ -729,7 +759,8 @@
         Array.from(select.options).forEach(function(opt) {
           if (opt.value !== '') select.remove(opt.index);
         });
-        (data.squadrons || []).forEach(function(sq) {
+        var sorted = (data.squadrons || []).slice().sort(function(a, b) { return a.localeCompare(b); });
+        sorted.forEach(function(sq) {
           var opt = document.createElement('option');
           opt.value = sq;
           opt.textContent = sq;
@@ -737,6 +768,9 @@
         });
         // Restore selected value if applicable
         if (currentSquadron) select.value = currentSquadron;
+        // Clear the squadron search input since list just reloaded
+        var sqSearch = document.getElementById('squadron-search');
+        if (sqSearch) sqSearch.value = '';
         squadronsLoaded[role] = true;
       } catch (_) {}
     }
@@ -745,9 +779,13 @@
       renderSkeleton();
       loadSquadrons(role);
 
+      var playerInput = document.getElementById('player-search');
+      var searchTerm = playerInput ? playerInput.value.trim() : '';
+
       var url = apiBase + '/api/elo-leaderboard?role=' + role
         + '&page=' + page + '&limit=' + PAGE_SIZE;
-      if (squadron) url += '&squadron=' + encodeURIComponent(squadron);
+      if (squadron)   url += '&squadron=' + encodeURIComponent(squadron);
+      if (searchTerm) url += '&player='   + encodeURIComponent(searchTerm);
 
       try {
         var response = await fetch(url, {
@@ -779,6 +817,8 @@
         currentPage = 1;
         currentSquadron = null;
         document.getElementById('elo-squadron-filter').value = '';
+        document.getElementById('player-search').value = '';
+        document.getElementById('squadron-search').value = '';
         loadLeaderboard(currentRole, currentPage, currentSquadron);
       });
     });
@@ -788,6 +828,26 @@
       currentSquadron = this.value || null;
       currentPage = 1;
       loadLeaderboard(currentRole, currentPage, currentSquadron);
+    });
+
+    // Squadron search — filters visible options in the select
+    document.getElementById('squadron-search').addEventListener('input', function() {
+      var term = this.value.toLowerCase();
+      var select = document.getElementById('elo-squadron-filter');
+      Array.from(select.options).forEach(function(opt) {
+        if (opt.value === '') { opt.hidden = false; return; }
+        opt.hidden = term.length > 0 && !opt.textContent.toLowerCase().includes(term);
+      });
+    });
+
+    // Player search — debounced, fetches all and filters client-side
+    var playerSearchTimer = null;
+    document.getElementById('player-search').addEventListener('input', function() {
+      clearTimeout(playerSearchTimer);
+      playerSearchTimer = setTimeout(function() {
+        currentPage = 1;
+        loadLeaderboard(currentRole, currentPage, currentSquadron);
+      }, 300);
     });
 
     // Nav hamburger

@@ -4,685 +4,911 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Premium Players Worldwide — War Thunder Squadron</title>
-  <meta name="description" content="Premium Players Worldwide (PPW) is a War Thunder squadron dedicated to teamwork, tactical gameplay, and competitive battles across all nations." />
-  <meta name="theme-color" content="#000000" />
-  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <meta name="description" content="Premium Players Worldwide (PPW) — a War Thunder squadron and familia since 2020. Tactical SQB / SRE battles, tournaments, and brotherhood." />
+  <meta name="theme-color" content="#07060A" />
+  <link rel="icon" href="images/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
   <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
-</head>
-<body>
+  <style>
+    /* ===== HOME PAGE STYLES ===== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: calc(var(--nav-h) + 4rem) 0 4rem;
+      overflow: hidden;
+    }
+    .hero .container {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 1.25rem;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(2.6rem, 6.4vw, 5.4rem);
+      line-height: 0.96;
+      letter-spacing: 0.005em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .hero-title .glow {
+      background: linear-gradient(180deg, #fff 0%, #fff 55%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+    .hero-title .accent {
+      color: var(--gold);
+    }
+    .hero-title .pipe {
+      color: var(--purple-2);
+      font-weight: 400;
+    }
 
-  <!-- ===== NAVIGATION ===== -->
-  <nav class="navbar">
+    .hero-sub {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 1.5rem;
+    }
+    .hero-sub::before {
+      content: "";
+      width: 28px; height: 1px;
+      background: var(--gold);
+    }
+
+    .hero-desc {
+      max-width: 540px;
+      font-size: 1.02rem;
+      color: var(--fg-soft);
+      margin-top: 1.5rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 2.25rem;
+      flex-wrap: wrap;
+    }
+
+    /* Hero right panel — dossier-style snapshot */
+    .hero-snap {
+      position: relative;
+      padding: 1.75rem;
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line-2);
+      border-radius: var(--r);
+    }
+    .hero-snap .snap-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--purple-line);
+    }
+    .hero-snap .snap-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .hero-snap .snap-id {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+    }
+    .hero-snap .snap-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px dashed rgba(139,43,226,0.18);
+    }
+    .hero-snap .snap-row:last-child { border-bottom: none; }
+    .hero-snap .snap-row .k {
+      color: var(--fg-mute);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .hero-snap .snap-row .v {
+      color: var(--fg);
+      font-weight: 500;
+    }
+    .hero-snap .snap-row .v.gold { color: var(--gold); font-weight: 600; }
+
+    .hero-snap-logo {
+      position: absolute;
+      top: -36px;
+      right: 24px;
+      width: 72px;
+      height: 72px;
+      background: var(--ink-0);
+      border: 1px solid var(--purple-line-2);
+      border-radius: var(--r);
+      padding: 8px;
+    }
+
+    /* Hero scroll cue */
+    .hero-cue {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--fg-mute);
+    }
+    .hero-cue::after {
+      content: "";
+      width: 1px; height: 36px;
+      background: linear-gradient(180deg, var(--gold), transparent);
+      animation: cue 2s ease-in-out infinite;
+    }
+    @keyframes cue {
+      0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+      50% { opacity: 1; transform: scaleY(1); }
+    }
+
+    /* Stat strip */
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      background: var(--ink-1);
+      overflow: hidden;
+    }
+    .stat-strip .stat {
+      padding: 1.5rem;
+      border-right: 1px solid var(--purple-line);
+      position: relative;
+    }
+    .stat-strip .stat:last-child { border-right: none; }
+    .stat .lbl {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--fg-mute);
+      margin-bottom: 0.5rem;
+    }
+    .stat .val {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      letter-spacing: 0.04em;
+      color: #fff;
+      line-height: 1;
+    }
+    .stat .val.gold { color: var(--gold); }
+    .stat .delta {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      margin-top: 0.5rem;
+      color: var(--win);
+    }
+    .stat .delta.dim { color: var(--fg-mute); }
+    @media (max-width: 720px) {
+      .stat-strip { grid-template-columns: repeat(2, 1fr); }
+      .stat-strip .stat:nth-child(2) { border-right: none; }
+      .stat-strip .stat:nth-child(1), .stat-strip .stat:nth-child(2) { border-bottom: 1px solid var(--purple-line); }
+    }
+
+    /* Ops log */
+    .ops-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.1fr;
+      gap: 1.25rem;
+    }
+    .ops-list { display: flex; flex-direction: column; gap: 0; }
+    .ops-item {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 1.25rem;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      margin-bottom: 0.5rem;
+      transition: all var(--t);
+      position: relative;
+    }
+    .ops-item:hover {
+      border-color: var(--gold-line);
+      background: var(--ink-2);
+    }
+    .ops-item .when {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      color: var(--fg-mute);
+      text-transform: uppercase;
+    }
+    .ops-item .when .day {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .ops-item .title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      color: #fff;
+      text-transform: uppercase;
+    }
+    .ops-item .meta {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      color: var(--fg-mute);
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+    .ops-item .badge {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 0.2em 0.6em;
+      border: 1px solid var(--gold-line);
+      color: var(--gold);
+      border-radius: var(--r);
+      white-space: nowrap;
+    }
+    .ops-item .ops-link {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      color: var(--purple-2);
+      text-decoration: none;
+      margin-top: 0.2rem;
+    }
+    .ops-item .ops-link:hover { color: var(--gold); }
+    @media (max-width: 900px) {
+      .ops-grid { grid-template-columns: 1fr; }
+      .ops-item { grid-template-columns: 60px 1fr auto; gap: 0.75rem; padding: 1rem; }
+    }
+
+    /* Battle log card */
+    .bx {
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      padding: 1.25rem;
+    }
+    .bx-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--purple-line);
+    }
+    .bx-head h3 { font-size: 0.95rem; }
+    .bx-status {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+    }
+    .bx-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px dashed rgba(139,43,226,0.18);
+      align-items: center;
+    }
+    .bx-row:last-child { border-bottom: none; }
+    .bx-row .map { font-family: var(--font-display); font-size: 0.9rem; letter-spacing: 0.05em; color: #fff; text-transform: uppercase; }
+    .bx-row .vs { font-family: var(--font-mono); font-size: 0.7rem; color: var(--fg-mute); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 0.15rem; }
+    .bx-row .score { font-family: var(--font-mono); font-size: 0.82rem; color: var(--fg-soft); letter-spacing: 0.06em; }
+    .bx-row .res {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.16em;
+      padding: 0.18em 0.6em;
+      border: 1px solid currentColor;
+      border-radius: var(--r);
+      text-transform: uppercase;
+    }
+    .bx-row.win .res { color: var(--win); }
+    .bx-row.loss .res { color: var(--loss); }
+    .bx-row.tie .res { color: var(--neutral); }
+    .bx-empty {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      color: var(--fg-mute);
+      text-transform: uppercase;
+      padding: 1rem 0;
+      text-align: center;
+    }
+
+    /* Doctrine / values strip */
+    .doctrine-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .doctrine {
+      position: relative;
+      padding: 1.75rem 1.5rem 1.5rem;
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      transition: all var(--t);
+    }
+    .doctrine:hover {
+      border-color: var(--gold-line);
+      background: linear-gradient(180deg, rgba(255,184,0,0.04), transparent 60%), var(--ink-2);
+    }
+    .doctrine .num {
+      position: absolute;
+      top: 1rem; right: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.2em;
+      color: var(--purple-2);
+    }
+    .doctrine .ico {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--gold);
+      border: 1px solid var(--gold-line);
+      border-radius: var(--r);
+      margin-bottom: 1.25rem;
+      background: rgba(255,184,0,0.06);
+    }
+    .doctrine h3 {
+      margin-bottom: 0.4rem;
+      font-size: 1.05rem;
+    }
+    .doctrine p {
+      font-size: 0.88rem;
+      color: var(--fg-soft);
+    }
+
+    /* CTA banner */
+    .cta-block {
+      position: relative;
+      padding: 4rem 2.5rem;
+      background:
+        radial-gradient(circle at 80% 40%, rgba(255,184,0,0.10), transparent 50%),
+        radial-gradient(circle at 10% 80%, rgba(139,43,226,0.20), transparent 50%),
+        var(--ink-1);
+      border: 1px solid var(--purple-line-2);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .cta-block::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(135deg, rgba(255,184,0,0.04) 0 1px, transparent 1px 24px);
+      pointer-events: none;
+    }
+    .cta-block h2 {
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      max-width: 720px;
+      position: relative;
+    }
+    .cta-block p { max-width: 540px; position: relative; }
+    .cta-block .hero-actions { position: relative; }
+
+    /* Responsive hero */
+    @media (max-width: 980px) {
+      .hero .container { grid-template-columns: 1fr; gap: 2.5rem; }
+      .hero-snap { max-width: 420px; }
+    }
+
+    @media (max-width: 900px) { .doctrine-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 580px) { .doctrine-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body data-bg="radar">
+
+  <!-- ===== NAV ===== -->
+  <nav class="nav">
     <div class="container">
       <a href="index.html" class="nav-brand">
-        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
-        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+        <img src="images/logo.png" alt="PPW" />
+        <div>
+          <span class="name">Premium Players</span>
+          <span class="sub">SQDN · WTPPW · EST 2020</span>
+        </div>
       </a>
       <ul class="nav-links" id="nav-links">
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="members.html">Members</a></li>
-        <li><a href="battles.html">Battles</a></li>
-        <li><a href="elo.html">ELO</a></li>
-        <li><a href="tournaments.html">Tournaments</a></li>
-        <li><a href="recruitment.html">Join Us</a></li>
-        <li><a href="rules.html">Rules</a></li>
-        <li><a href="values.html">Values</a></li>
+        <li><a href="index.html"        data-num="01" class="active">Home</a></li>
+        <li><a href="members.html"      data-num="02">Roster</a></li>
+        <li><a href="elo.html"          data-num="03">ELO</a></li>
+        <li><a href="battles.html"      data-num="04">Battles</a></li>
+        <li><a href="tournaments.html"  data-num="05">Tournaments</a></li>
+        <li><a href="recruitment.html"  data-num="06">Enlist</a></li>
+        <li><a href="rules.html"        data-num="07">Rules</a></li>
+        <li><a href="values.html"       data-num="08">Values</a></li>
       </ul>
-      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <a href="recruitment.html" class="btn btn-primary btn-sm nav-cta">Enlist <span class="caret"></span></a>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle nav" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
   </nav>
 
-  <!-- ===== HERO ===== -->
-  <header class="hero">
-    <div class="container hero-content">
-      <div class="hero-logo">
-        <img src="images/logo.svg" alt="PPW Squadron Logo" class="hero-logo-img" />
-      </div>
-      <div class="hero-tag">War Thunder Squadron</div>
-      <h1 class="hero-title">Premium Players<br>Worldwide</h1>
-      <p class="hero-subtitle">Strength in Formation</p>
-      <p class="hero-desc">
-        An active War Thunder squadron built on coordination, tactical awareness,
-        and mutual respect. Whether you fly jets, drive tanks, or sail warships —
-        there's a place for you in our ranks.
-      </p>
-      <div class="hero-actions">
-        <a href="recruitment.html" class="btn btn-primary">Join the Squadron</a>
-        <a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer" class="btn btn-discord">Join Discord</a>
-        <a href="members.html" class="btn btn-outline">View Roster</a>
-      </div>
-    </div>
-    <div class="hero-scroll">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
-      Scroll
-    </div>
-  </header>
+  <main class="site">
 
-  <!-- ===== STATS BAR ===== -->
-  <div class="stats-bar">
-    <div class="container">
-      <div class="stat-item">
-        <div class="stat-value" id="stat-members">—</div>
-        <div class="stat-label">Active Members</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">SB &amp; RB</div>
-        <div class="stat-label">Battle Modes</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">24/7</div>
-        <div class="stat-label">Discord Activity</div>
-      </div>
-    </div>
-  </div>
+    <!-- ===== HERO ===== -->
+    <header class="hero">
+      <div class="container">
+        <div>
+          <div class="hero-meta">
+            <span class="mil"><span class="dot live"></span>Net status<span class="sep">/</span><span class="val">Online</span></span>
+            <span class="mil">UTC<span class="sep">/</span><span class="val" data-clock>--:--:--Z</span></span>
+            <span class="mil">SQDN<span class="sep">/</span><span class="val">WTPPW</span></span>
+          </div>
 
-  <!-- ===== ANNOUNCEMENTS ===== -->
-  <section class="announcements">
-    <div class="container">
-      <div class="section-label">Latest</div>
-      <h2 class="section-heading">Announcements</h2>
-      <div class="divider"></div>
+          <h1 class="hero-title">
+            <span class="glow">Premium</span><br>
+            <span class="glow">Players</span><br>
+            <span class="accent">Worldwide<span class="pipe">/</span></span>
+          </h1>
 
-      <div class="announcement-list" id="announcement-list" aria-live="polite">
-        <div class="announcement-empty">Loading announcements from Discord...</div>
-      </div>
-    </div>
-  </section>
+          <div class="hero-sub">Strength in formation · Familia since 2020</div>
 
-  <!-- ===== BATTLE LOG ===== -->
-  <section class="battle-log-section">
-    <div class="container">
-      <div class="section-label">Replay Archive</div>
-      <h2 class="section-heading">Recent Squadron Battles</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        The Discord bot imports War Thunder replay summaries and publishes the latest recorded matches here automatically.
-      </p>
-      <div class="battle-log-summary">
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Total Battles</span>
-          <span class="battle-log-stat-value" data-battle-stat="total">—</span>
+          <p class="hero-desc">
+            A War Thunder squadron built on coordination, tactical awareness, and mutual respect.
+            We fly, drive, and sail across every theatre — SQB / SRE, tournaments, and everything in between.
+          </p>
+
+          <div class="hero-actions">
+            <a href="recruitment.html" class="btn btn-primary">Enlist Today <span class="caret"></span></a>
+            <a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer" class="btn btn-purple">Join Discord</a>
+            <a href="members.html" class="btn btn-ghost">View Roster</a>
+          </div>
         </div>
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Victories</span>
-          <span class="battle-log-stat-value" data-battle-stat="wins">—</span>
-        </div>
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Defeats</span>
-          <span class="battle-log-stat-value" data-battle-stat="losses">—</span>
-        </div>
-        <div class="card battle-log-stat">
-          <span class="battle-log-stat-label">Win Rate</span>
-          <span class="battle-log-stat-value" data-battle-stat="winrate">—</span>
+
+        <!-- Right column: dossier-style snapshot of the squadron -->
+        <aside class="hero-snap brackets">
+          <img src="images/logo.png" alt="" class="hero-snap-logo" />
+          <div class="snap-head">
+            <span class="snap-title">Unit Dossier</span>
+            <span class="snap-id">OBJ-2020 · WTPPW</span>
+          </div>
+          <div class="snap-row"><span class="k">Designation</span><span class="v">Premium Players Worldwide</span></div>
+          <div class="snap-row"><span class="k">Tag</span><span class="v gold">WTPPW</span></div>
+          <div class="snap-row"><span class="k">Established</span><span class="v">12 · MAR · 2020</span></div>
+          <div class="snap-row"><span class="k">Active Roster</span><span class="v gold" id="hero-stat-members">—</span></div>
+          <div class="snap-row"><span class="k">Theatre</span><span class="v">Air · Ground · Naval</span></div>
+          <div class="snap-row"><span class="k">Doctrine</span><span class="v">RB · SB · SQB / SRE</span></div>
+          <div class="snap-row"><span class="k">Comms</span><span class="v">Discord · 24/7</span></div>
+        </aside>
+      </div>
+
+      <div class="hero-cue">SCROLL FOR BRIEFING</div>
+    </header>
+
+    <!-- ===== STAT STRIP ===== -->
+    <section style="padding: 3rem 0;">
+      <div class="container">
+        <div class="stat-strip">
+          <div class="stat">
+            <div class="lbl">Active Roster</div>
+            <div class="val gold" id="stat-members">—</div>
+            <div class="delta" id="stat-members-delta">&nbsp;</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Theatres</div>
+            <div class="val">3</div>
+            <div class="delta dim">Air · Ground · Sea</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Years in Service</div>
+            <div class="val">5+</div>
+            <div class="delta dim">Since March 2020</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Win Rate / 30d</div>
+            <div class="val gold" id="stat-winrate">—</div>
+            <div class="delta" id="stat-winrate-delta">&nbsp;</div>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="card battle-log-panel">
-        <div class="battle-log-panel-head">
+    <!-- ===== OPERATIONS LOG + BATTLE LOG ===== -->
+    <section>
+      <div class="container">
+        <div class="s-head">
           <div>
-            <span class="battle-log-kicker">Latest Results</span>
-            <h3 style="margin:0; font-size:1.05rem;">Recent Battles</h3>
+            <div class="eyebrow"><span class="num">01</span><span class="label">Operations Log</span></div>
+            <h2 class="mt-2">Latest Briefings &amp; Recent Engagements</h2>
           </div>
-          <div class="battle-log-status" id="battle-log-status" data-state="loading">Loading…</div>
+          <div class="right">Synced · Discord<span style="color:var(--gold)"> ●</span></div>
         </div>
-        <div class="battle-log-list" id="battle-log-list">
-          <div class="battle-log-empty">Loading squadron battles…</div>
-        </div>
-        <div style="margin-top:1.25rem;">
-          <a href="battles.html" class="btn btn-outline btn-sm">View Full Battle History →</a>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ===== ABOUT ===== -->
-  <section class="about">
-    <div class="container">
-      <div class="section-label">About Us</div>
-      <h2 class="section-heading">Who We Are</h2>
-      <div class="divider"></div>
+        <div class="ops-grid">
+          <!-- Announcements -->
+          <div class="ops-list" id="announcement-list">
+            <div class="ops-item" style="grid-template-columns:1fr;">
+              <div style="font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.14em;color:var(--fg-mute);text-transform:uppercase;">Loading briefings…</div>
+            </div>
+          </div>
 
-      <div class="grid-2">
-        <div>
-          <p>
-            Premium Players Worldwide (PPW) is a War Thunder squadron and a familia —
-            we've been playing together since 2020, and before that on World of Tanks.
-            We're not just a tag; we're a tight-knit community.
-          </p>
-          <p>
-            Our main focus is Squadron Battles (also called Squadron Realistic Events — SQBs/SREs) and hanging out together — but we also run our own tournaments and take part in War Thunder's official Tournament Service System (TSS) events. We're actively growing and looking for experienced players to compete and improve with.
-          </p>
-          <p>
-            If you bring skill, respect, and a willingness to learn, there's a place
-            for you in our ranks.
-          </p>
-          <div class="mt-3">
-            <a href="recruitment.html" class="btn btn-primary btn-sm">Apply Now</a>
-          </div>
-        </div>
-        <div class="grid-2" style="align-content: start; gap: 1rem;">
-          <div class="card">
-            <div class="card-icon">🛡️</div>
-            <h3>Teamwork First</h3>
-            <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-              We coordinate in battle and support each other off the battlefield too.
-            </p>
-          </div>
-          <div class="card">
-            <div class="card-icon">✈️</div>
-            <h3>All Branches</h3>
-            <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-              Ground forces, aviation, and naval — we cover every theatre of war.
-            </p>
-          </div>
-          <div class="card">
-            <div class="card-icon">📈</div>
-            <h3>Always Improving</h3>
-            <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-              Share replays, strategies, and loadout advice to grow as a player.
-            </p>
-          </div>
-          <div class="card">
-            <div class="card-icon">🎖️</div>
-            <h3>Active Leadership</h3>
-            <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-              Officers who play regularly, organise events, and keep the squadron active.
-            </p>
+          <!-- Battle log mini -->
+          <div class="bx">
+            <div class="bx-head">
+              <h3>Recent Engagements</h3>
+              <span class="bx-status" id="bx-status"><span class="dot standby"></span>Loading</span>
+            </div>
+            <div id="battle-log-mini"><div class="bx-empty">Loading…</div></div>
+            <a href="battles.html" class="btn btn-ghost btn-sm mt-3" style="width:100%;">Full Battle History <span class="caret"></span></a>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== VALUES PREVIEW ===== -->
-  <section style="background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
-    <div class="container">
-      <div class="section-label">Our Foundation</div>
-      <h2 class="section-heading">Our Values</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        Six principles guide every member of PPW — in battle and beyond.
-      </p>
-      <div class="grid-3" style="margin-top: 1.5rem;">
-        <div class="card" style="text-align: center; padding: 1.25rem 1rem;">
-          <div class="card-icon">🏆</div>
-          <h3 style="margin: 0.4rem 0 0.2rem;">Excellence</h3>
-          <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Always push to be better.</p>
+    <!-- ===== DOCTRINE / WHAT WE PLAY ===== -->
+    <section>
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">02</span><span class="label">Doctrine</span></div>
+            <h2 class="mt-2">Where We Fight</h2>
+          </div>
+          <div class="right">3 Theatres · Multi-Mode</div>
         </div>
-        <div class="card" style="text-align: center; padding: 1.25rem 1rem;">
-          <div class="card-icon">⚖️</div>
-          <h3 style="margin: 0.4rem 0 0.2rem;">Integrity</h3>
-          <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Uphold the letter and spirit of our rules.</p>
-        </div>
-        <div class="card" style="text-align: center; padding: 1.25rem 1rem;">
-          <div class="card-icon">🤲</div>
-          <h3 style="margin: 0.4rem 0 0.2rem;">Charity</h3>
-          <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Give back to the people around you.</p>
-        </div>
-        <div class="card" style="text-align: center; padding: 1.25rem 1rem;">
-          <div class="card-icon">🔗</div>
-          <h3 style="margin: 0.4rem 0 0.2rem;">Loyalty</h3>
-          <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Show up and stay committed.</p>
-        </div>
-        <div class="card" style="text-align: center; padding: 1.25rem 1rem;">
-          <div class="card-icon">🎖️</div>
-          <h3 style="margin: 0.4rem 0 0.2rem;">Respect</h3>
-          <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Treat everyone with dignity.</p>
-        </div>
-        <div class="card" style="text-align: center; padding: 1.25rem 1rem;">
-          <div class="card-icon">🤝</div>
-          <h3 style="margin: 0.4rem 0 0.2rem;">Selfless Service</h3>
-          <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Put the team above your own stats.</p>
+
+        <div class="doctrine-grid">
+          <div class="doctrine">
+            <span class="num">D-01</span>
+            <div class="ico">RB</div>
+            <h3>Realistic Battles</h3>
+            <p>Our bread and butter. Coordinated lineups, squad spawns, cap rotations, and disciplined comms in every match.</p>
+          </div>
+          <div class="doctrine">
+            <span class="num">D-02</span>
+            <div class="ico">SB</div>
+            <h3>Simulator Battles</h3>
+            <p>For pilots and tankers who want the deepest immersion. Regular SB squads with real comms protocol.</p>
+          </div>
+          <div class="doctrine">
+            <span class="num">D-03</span>
+            <div class="ico">SQB</div>
+            <h3>Squadron Battles</h3>
+            <p>SQB / SRE 8v8 organised matches every week. Earn research points, build the meta, push the ladder.</p>
+          </div>
+          <div class="doctrine">
+            <span class="num">D-04</span>
+            <div class="ico">TSS</div>
+            <h3>Tournament Service System</h3>
+            <p>Gaijin's official tournament platform — we field PPW colours in TSS events on regular schedule.</p>
+          </div>
+          <div class="doctrine">
+            <span class="num">D-05</span>
+            <div class="ico">INT</div>
+            <h3>Internal Tournaments</h3>
+            <p>Our own knockout brackets and friendly competitions, run by officers, with bragging rights on the line.</p>
+          </div>
+          <div class="doctrine">
+            <span class="num">D-06</span>
+            <div class="ico">REC</div>
+            <h3>Recreation Ops</h3>
+            <p>Custom matches, screenshot ops, and pure-fun nights. The familia matters more than the K/D.</p>
+          </div>
         </div>
       </div>
-      <div style="text-align: center; margin-top: 2rem;">
-        <a href="values.html" class="btn btn-outline">Discover Our Values &rarr;</a>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== WHAT WE PLAY ===== -->
-  <section>
-    <div class="container">
-      <div class="section-label">Gameplay</div>
-      <h2 class="section-heading">What We Play</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        Our members span multiple nations and battle ratings. We primarily focus on
-        Realistic and Simulator Battles but welcome anyone into our ranks.
-      </p>
+    <!-- ===== VALUES / FAMILIA ===== -->
+    <section style="background: linear-gradient(180deg, var(--ink-1), var(--ink-0));">
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">03</span><span class="label">Familia Code</span></div>
+            <h2 class="mt-2">Six Principles, One Squadron</h2>
+          </div>
+          <div class="right">Charter · 2020</div>
+        </div>
 
-      <div class="grid-3">
-        <div class="card">
-          <div class="card-icon">🚀</div>
-          <h3>Realistic Battles</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Our bread and butter. Coordinate squad spawns, cap zones, and call out
-            enemy positions in RB for the win.
-          </p>
+        <div class="grid-3">
+          <div class="card glow">
+            <div class="kicker">P-01 · Excellence</div>
+            <h3>Always push to be better.</h3>
+            <p>We share replays, dissect mistakes, and improve together. Skill is a verb.</p>
+          </div>
+          <div class="card glow">
+            <div class="kicker">P-02 · Integrity</div>
+            <h3>Letter and spirit.</h3>
+            <p>We uphold the rules of the game and the rules of the squadron — even when no one is watching.</p>
+          </div>
+          <div class="card glow">
+            <div class="kicker">P-03 · Charity</div>
+            <h3>Give back.</h3>
+            <p>Mentor a newer pilot. Share your lineup. Spot a teammate before yourself.</p>
+          </div>
+          <div class="card glow">
+            <div class="kicker">P-04 · Loyalty</div>
+            <h3>Show up.</h3>
+            <p>Commit to the people who commit to you. The wing on your tag means something.</p>
+          </div>
+          <div class="card glow">
+            <div class="kicker">P-05 · Respect</div>
+            <h3>Dignity, always.</h3>
+            <p>Inside the squadron and outside it. Toxicity is not a strategy.</p>
+          </div>
+          <div class="card glow">
+            <div class="kicker">P-06 · Selfless Service</div>
+            <h3>The team above the stat.</h3>
+            <p>A capture is worth ten kills. The win is worth ten captures. The familia is worth all of it.</p>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-icon">🎮</div>
-          <h3>Simulator Battles</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            For the hardcore pilots and tankers who want maximum immersion — we run
-            SB squads regularly.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-icon">⚔️</div>
-          <h3>Squadron Battles (SQBs/SREs)</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Earn squadron research points in organised 8v8 competitive matches.
-            Some call them SQBs, others SREs — either way, we run them regularly.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🌍</div>
-          <h3>Ground Forces</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Armoured warfare is at our core. We discuss tank lineups, BR meta, and
-            flanking routes every day.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-icon">✈️</div>
-          <h3>Air Forces</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Propeller and jet aircraft pilots welcome. We share energy fighting tips,
-            boom-and-zoom tactics, and CAS loadouts.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-icon">⚓</div>
-          <h3>Naval Forces</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Coastal and bluewater sailors who want to dominate the seas — we have
-            a growing naval contingent.
-          </p>
+
+        <div class="text-center mt-6">
+          <a href="values.html" class="btn btn-ghost">Read the Full Charter <span class="caret"></span></a>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== CTA ===== -->
-  <section style="background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: 4rem 0;">
-    <div class="container text-center">
-      <div class="section-label" style="margin: 0 auto 0.75rem;">Ready to Fight?</div>
-      <h2 style="margin-bottom: 1rem;">Join PPW Today</h2>
-      <p class="text-muted" style="max-width: 480px; margin: 0 auto 2rem;">
-        Level 100+, 1.0 K/D minimum, and a good attitude. Check the requirements,
-        read the rules, and join the familia.
-      </p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <a href="recruitment.html" class="btn btn-primary">How to Join</a>
-        <a href="rules.html" class="btn btn-outline">Read the Rules</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <div class="footer-brand-name">Premium Players Worldwide</div>
-          <p class="footer-brand-desc">
-            A War Thunder squadron and familia since 2020 — built on teamwork,
-            competitive SQBs, Tournament Service System events, and a friendly community.
+    <!-- ===== CTA ===== -->
+    <section>
+      <div class="container">
+        <div class="cta-block brackets">
+          <div class="eyebrow"><span class="num">04</span><span class="label">Recruitment</span></div>
+          <h2 class="mt-3">Ready to fly the WTPPW tag?</h2>
+          <p class="text-soft mt-2">
+            Level 100+ · Personal K/D 1.0+ · Working mic · Good attitude.
+            Read the requirements, hop in our Discord, and ship the application.
           </p>
-        </div>
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="members.html">Members</a></li>
-            <li><a href="recruitment.html">Join Us</a></li>
-            <li><a href="rules.html">Rules</a></li>
-            <li><a href="values.html">Values</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Quick Info</h4>
-          <ul>
-            <li><a href="recruitment.html#requirements">Requirements</a></li>
-            <li><a href="rules.html#conduct">Code of Conduct</a></li>
-            <li><a href="members.html#officers">Officers</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Community</h4>
-          <ul>
-            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
-            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
-          </ul>
+          <div class="hero-actions">
+            <a href="recruitment.html" class="btn btn-primary">How to Enlist <span class="caret"></span></a>
+            <a href="rules.html" class="btn btn-ghost">Read the Rules</a>
+          </div>
         </div>
       </div>
-      <div class="footer-bottom">
-        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
-        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
-      </div>
-    </div>
-  </footer>
+    </section>
 
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="name">Premium Players Worldwide</div>
+            <p class="text-soft">A War Thunder squadron and familia since 2020. Built on teamwork, competitive SQBs, tournaments, and a community that actually shows up.</p>
+            <div class="mil mt-3"><span class="sep">//</span> SQDN · WTPPW <span class="sep">·</span> EST 2020</div>
+          </div>
+          <div>
+            <h4>Navigation</h4>
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="members.html">Roster</a></li>
+              <li><a href="elo.html">ELO</a></li>
+              <li><a href="battles.html">Battles</a></li>
+              <li><a href="tournaments.html">Tournaments</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Quick Info</h4>
+            <ul>
+              <li><a href="recruitment.html">Enlist</a></li>
+              <li><a href="rules.html">Rules</a></li>
+              <li><a href="values.html">Values</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Community</h4>
+            <ul>
+              <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
+              <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2025 Premium Players Worldwide · All rights reserved</span>
+          <span>War Thunder is a trademark of Gaijin Entertainment</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
   <script>
-    var btn = document.getElementById('nav-toggle');
-    var menu = document.getElementById('nav-links');
-    var apiBaseMeta = document.querySelector('meta[name="ppw-api-base"]');
-    var apiKeyMeta = document.querySelector('meta[name="ppw-api-key"]');
-    var apiBase = apiBaseMeta ? apiBaseMeta.content.replace(/\/+$/, '') : '';
-    var apiKey = apiKeyMeta ? apiKeyMeta.content.trim() : '';
-    var announcementList = document.getElementById('announcement-list');
-    var battleLogStatus = document.getElementById('battle-log-status');
-    var battleLogList = document.getElementById('battle-log-list');
-    btn.addEventListener('click', function () {
-      var open = menu.classList.toggle('open');
-      btn.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', open);
-    });
+    (function () {
+      var apiBase = (document.querySelector('meta[name="ppw-api-base"]') || {}).content || '';
+      var apiKey  = (document.querySelector('meta[name="ppw-api-key"]')  || {}).content || '';
+      apiBase = apiBase.replace(/\/+$/, '');
 
-    function escapeText(value) {
-      return String(value == null || value === '' ? '—' : value);
-    }
-
-    function formatDate(value) {
-      if (!value) {
-        return 'Unknown date';
+      function esc(v) {
+        return String(v == null ? '—' : v)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
-      var date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
-        return String(value);
+      function buildHeaders() {
+        var h = {};
+        if (apiKey) h['X-API-Key'] = apiKey;
+        return h;
       }
 
-      return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      }).format(date);
-    }
-
-    function formatResult(replay) {
-      if (!replay) {
-        return 'Unknown result';
-      }
-
-      if (replay.winnerSide === 'tie') {
-        return 'Tie';
-      }
-
-      if (replay.winnerSide === 'left') {
-        return replay.leftLabel || 'Left side';
-      }
-
-      if (replay.winnerSide === 'right') {
-        return replay.rightLabel || 'Right side';
-      }
-
-      return replay.resultText || 'Unknown result';
-    }
-
-    function buildScoreLabel(replay) {
-      if (!replay) {
-        return '0 - 0';
-      }
-
-      return escapeText(replay.leftScore) + ' - ' + escapeText(replay.rightScore);
-    }
-
-    function formatAnnouncementDate(value) {
-      var date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
-        return { month: 'Now', day: '—' };
-      }
-
-      return {
-        month: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date),
-        day: new Intl.DateTimeFormat('en-US', { day: '2-digit' }).format(date)
-      };
-    }
-
-    function escapeAttribute(value) {
-      return String(value == null ? '' : value)
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-
-    function buildApiHeaders(extraHeaders) {
-      var headers = Object.assign({}, extraHeaders || {});
-      if (apiKey) {
-        headers['X-API-Key'] = apiKey;
-      }
-      return headers;
-    }
-
-    function pickAnnouncementTag(announcement, index) {
-      if (index === 0) {
-        return { text: 'Latest', className: 'ann-tag-new' };
-      }
-
-      if (announcement.summary) {
-        return { text: 'Discord', className: 'ann-tag-info' };
-      }
-
-      return { text: 'Update', className: 'ann-tag-battle' };
-    }
-
-    function renderAnnouncements(announcements) {
-      if (!announcementList) {
-        return;
-      }
-
-      if (!Array.isArray(announcements) || announcements.length === 0) {
-        announcementList.innerHTML = '<div class="announcement-empty">No announcements were found in the Discord channel yet.</div>';
-        return;
-      }
-
-      var html = announcements.map(function (announcement, index) {
-        var date = formatAnnouncementDate(announcement.timestamp);
-        var tag = pickAnnouncementTag(announcement, index);
-
-        return [
-          '<article class="announcement-card">',
-            '<div class="ann-date">',
-              '<span class="ann-month">' + escapeText(date.month) + '</span>',
-              '<span class="ann-day">' + escapeText(date.day) + '</span>',
-            '</div>',
-            '<div class="ann-body">',
-              '<div><span class="ann-tag ' + tag.className + '">' + escapeText(tag.text) + '</span></div>',
-              '<h4><a href="' + escapeAttribute(announcement.url) + '" target="_blank" rel="noopener noreferrer">' + escapeText(announcement.header) + '</a></h4>',
-              '<p class="ann-meta"><a href="' + escapeAttribute(announcement.url) + '" target="_blank" rel="noopener noreferrer">Open in Discord</a></p>',
-            '</div>',
-          '</article>'
-        ].join('');
-      }).join('');
-
-      announcementList.innerHTML = html;
-    }
-
-    async function loadAnnouncements() {
-      if (!apiBase || !announcementList) {
-        return;
-      }
-
-      try {
-        var response = await fetch(apiBase + '/api/announcements?limit=3', {
-          cache: 'no-store',
-          headers: buildApiHeaders()
-        });
-
-        if (!response.ok) {
-          throw new Error('HTTP ' + response.status);
+      /* ---- Member count ------------------------------------------ */
+      async function loadMembers() {
+        try {
+          var r = await fetch(apiBase + '/api/squadron-members', {
+            cache: 'no-store', headers: buildHeaders()
+          });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          var data = await r.json();
+          var count = Array.isArray(data.players) ? data.players.length : 0;
+          if (count > 0) {
+            var txt = count + ' members';
+            var el1 = document.getElementById('hero-stat-members');
+            var el2 = document.getElementById('stat-members');
+            if (el1) el1.textContent = count;
+            if (el2) el2.textContent = count;
+          }
+        } catch (e) {
+          console.error('[Members]', e);
         }
-
-        var data = await response.json();
-        renderAnnouncements(data.announcements || []);
-      } catch (error) {
-        console.error('[Announcements] Failed to load Discord announcements:', error);
-        announcementList.innerHTML = '<div class="announcement-empty">Announcements are unavailable right now. Check the Discord announcements channel directly.</div>';
-      }
-    }
-
-    function setBattleStat(name, value) {
-      var node = document.querySelector('[data-battle-stat="' + name + '"]');
-      if (node) {
-        node.textContent = value;
-      }
-    }
-
-    async function loadStats() {
-      var membersElement = document.getElementById('stat-members');
-      if (!membersElement || !apiBase) {
-        return;
       }
 
-      try {
-        var url = new URL('/api/squadron-members', apiBase);
-        url.searchParams.set('name', 'Premium Players Worldwide');
+      /* ---- Announcements ----------------------------------------- */
+      function fmtAnnDate(ts) {
+        var d = new Date(ts);
+        if (isNaN(d.getTime())) return { month: 'NOW', day: '—' };
+        return {
+          month: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d).toUpperCase(),
+          day:   new Intl.DateTimeFormat('en-US', { day: '2-digit' }).format(d)
+        };
+      }
 
-        var response = await fetch(url.toString(), {
-          mode: 'cors',
-          cache: 'no-store',
-          headers: buildApiHeaders()
-        });
-
-        if (!response.ok) {
-          throw new Error('HTTP ' + response.status);
+      function renderAnnouncements(items) {
+        var el = document.getElementById('announcement-list');
+        if (!el) return;
+        if (!items || !items.length) {
+          el.innerHTML = '<div class="ops-item" style="grid-template-columns:1fr;"><div style="font-family:var(--font-mono);font-size:0.75rem;letter-spacing:0.14em;color:var(--fg-mute);text-transform:uppercase;">No announcements found — check Discord directly.</div></div>';
+          return;
         }
-
-        var data = await response.json();
-
-        if (data.ok === false) {
-          throw new Error(data.error || 'API returned an error');
-        }
-
-        var players = Array.isArray(data.players) ? data.players : [];
-        var memberCount = players.length;
-
-        if (memberCount > 0) {
-          membersElement.textContent = String(memberCount) + '+';
-        } else {
-          membersElement.textContent = '15+';
-        }
-      } catch (error) {
-        console.error('[Stats] Failed to load member count:', error);
-        membersElement.textContent = '15+';
-      }
-    }
-
-    function setBattleLogStatus(message, state) {
-      if (!battleLogStatus) {
-        return;
-      }
-
-      battleLogStatus.textContent = message;
-      battleLogStatus.dataset.state = state || 'idle';
-    }
-
-    function renderBattleLog(games) {
-      if (!battleLogList) {
-        return;
-      }
-
-      if (!Array.isArray(games) || games.length === 0) {
-        battleLogList.innerHTML = '<div class="battle-log-empty">No squadron battles recorded yet. Check back soon!</div>';
-        return;
-      }
-
-      var wins = 0, losses = 0, draws = 0;
-      games.forEach(function (g) {
-        if (g.winnerSide === 'left') wins++;
-        else if (g.winnerSide === 'right') losses++;
-        else if (g.winnerSide === 'tie') draws++;
-      });
-      var total = games.length;
-      setBattleStat('total', total);
-      setBattleStat('wins', wins);
-      setBattleStat('losses', losses);
-      setBattleStat('winrate', total > 0 ? Math.round((wins / total) * 100) + '%' : '—');
-
-      var html = games.slice(0, 5).map(function (game) {
-        var ws = game.winnerSide;
-        var resultCls = ws === 'left' ? 'win' : ws === 'right' ? 'loss' : ws === 'tie' ? 'tie' : '';
-        var resultText = ws === 'left' ? 'Victory' : ws === 'right' ? 'Defeat' : ws === 'tie' ? 'Draw' : 'Unknown';
-        var gameDate = game.battleDate ? formatDate(game.battleDate) : formatDate(game.importedAt);
-        var leftScore = game.leftScore != null ? game.leftScore : '—';
-        var rightScore = game.rightScore != null ? game.rightScore : '—';
-
-        return [
-          '<article class="battle-log-item ' + resultCls + '">',
-            '<div class="battle-log-item-top">',
+        el.innerHTML = items.map(function (ann, i) {
+          var dt    = fmtAnnDate(ann.timestamp);
+          var badge = i === 0 ? 'Briefing' : (ann.summary ? 'Discord' : 'Update');
+          var url   = esc(ann.url || '#');
+          var href  = ann.url ? '<a class="ops-link" href="' + url + '" target="_blank" rel="noopener noreferrer">Open in Discord</a>' : '';
+          return [
+            '<article class="ops-item">',
+              '<div class="when">' + esc(dt.month) + '<span class="day">' + esc(dt.day) + '</span></div>',
               '<div>',
-                '<div class="battle-log-map">' + escapeText(game.mapName || 'Unknown map') + '</div>',
-                '<div class="battle-log-date">' + escapeText(gameDate) + '</div>',
+                '<div class="title">' + esc(ann.header || 'Announcement') + '</div>',
+                '<div class="meta">DISCORD · #ANNOUNCEMENTS</div>',
+                href,
               '</div>',
-              '<div class="battle-log-result">' + escapeText(resultText) + '</div>',
-            '</div>',
-            '<div class="battle-log-score">' + escapeText(leftScore) + ' — ' + escapeText(rightScore) + '</div>',
-            '<div class="battle-log-meta">',
-              '<span>vs ' + escapeText(game.rightLabel || 'Unknown opponent') + '</span>',
-              '<span>' + escapeText(game.playerCount || '—') + ' players</span>',
-            '</div>',
-          '</article>'
-        ].join('');
-      }).join('');
-
-      battleLogList.innerHTML = html;
-    }
-
-    async function loadBattleLog() {
-      if (!apiBase || !battleLogList) {
-        return;
+              '<span class="badge">' + esc(badge) + '</span>',
+            '</article>'
+          ].join('');
+        }).join('');
       }
 
-      var controller = new AbortController();
-      var timeout = setTimeout(function () { controller.abort(); }, 8000);
-
-      try {
-        setBattleLogStatus('Loading…', 'loading');
-        var response = await fetch(apiBase + '/api/squadron-battle-log?limit=5&tag=WTPPW', {
-          signal: controller.signal,
-          cache: 'no-store',
-          headers: buildApiHeaders()
-        });
-
-        if (!response.ok) {
-          throw new Error('HTTP ' + response.status);
+      async function loadAnnouncements() {
+        if (!apiBase) return;
+        try {
+          var r = await fetch(apiBase + '/api/announcements?limit=4', {
+            cache: 'no-store', headers: buildHeaders()
+          });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          var data = await r.json();
+          renderAnnouncements(data.announcements || []);
+        } catch (e) {
+          console.error('[Announcements]', e);
+          renderAnnouncements([]);
         }
-
-        var data = await response.json();
-        var raw = data.recentReplays || [];
-        var games = raw.filter(function (g) {
-          var label = (g.leftLabel || '').toLowerCase();
-          return label.indexOf('wtppw') !== -1 || label.indexOf('premium players worldwide') !== -1;
-        });
-        renderBattleLog(games);
-        setBattleLogStatus('Live', 'ready');
-      } catch (error) {
-        console.error('[Battle Log] Failed to load games:', error);
-        setBattleLogStatus('Offline', 'error');
-        if (battleLogList) {
-          battleLogList.innerHTML = '<div class="battle-log-empty">Battle log unavailable — check the Discord bot or visit the <a href="battles.html">Battles</a> page.</div>';
-        }
-      } finally {
-        clearTimeout(timeout);
       }
-    }
 
-    loadStats();
-    loadBattleLog();
-    loadAnnouncements();
+      /* ---- Battle log mini --------------------------------------- */
+      function renderBattleMini(games) {
+        var el = document.getElementById('battle-log-mini');
+        var st = document.getElementById('bx-status');
+        if (!el) return;
+        if (!games || !games.length) {
+          el.innerHTML = '<div class="bx-empty">No battles recorded yet.</div>';
+          if (st) st.innerHTML = '<span class="dot standby"></span>Offline';
+          return;
+        }
+        // compute win rate for stat strip
+        var wins = 0, total = games.length;
+        games.forEach(function (g) { if (g.winnerSide === 'left') wins++; });
+        var wr = total > 0 ? Math.round((wins / total) * 100) + '%' : '—';
+        var wrEl = document.getElementById('stat-winrate');
+        if (wrEl) wrEl.textContent = wr;
+        var wdEl = document.getElementById('stat-winrate-delta');
+        if (wdEl) { wdEl.textContent = wins + 'W · ' + (total - wins) + 'L of ' + total; wdEl.className = 'delta dim'; }
+
+        el.innerHTML = games.slice(0, 5).map(function (g) {
+          var ws    = g.winnerSide;
+          var cls   = ws === 'left' ? 'win' : ws === 'right' ? 'loss' : 'tie';
+          var label = ws === 'left' ? 'Victory' : ws === 'right' ? 'Defeat' : 'Draw';
+          var ls    = g.leftScore  != null ? g.leftScore  : '—';
+          var rs    = g.rightScore != null ? g.rightScore : '—';
+          var opp   = g.rightLabel || 'Unknown';
+          return [
+            '<div class="bx-row ' + cls + '">',
+              '<div>',
+                '<div class="map">' + esc(g.mapName || 'Unknown Map') + '</div>',
+                '<div class="vs">vs ' + esc(opp) + ' · SQB</div>',
+              '</div>',
+              '<div class="score">' + esc(ls) + ' — ' + esc(rs) + '</div>',
+              '<div class="res">' + label + '</div>',
+            '</div>'
+          ].join('');
+        }).join('');
+
+        if (st) st.innerHTML = '<span class="dot live"></span>Live';
+      }
+
+      async function loadBattleLog() {
+        if (!apiBase) return;
+        var controller = new AbortController();
+        var timeout = setTimeout(function () { controller.abort(); }, 8000);
+        try {
+          var r = await fetch(apiBase + '/api/squadron-battle-log?limit=20&tag=WTPPW', {
+            signal: controller.signal, cache: 'no-store', headers: buildHeaders()
+          });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          var data = await r.json();
+          var raw = data.recentReplays || [];
+          var games = raw.filter(function (g) {
+            var lbl = (g.leftLabel || '').toLowerCase();
+            return lbl.indexOf('wtppw') !== -1 || lbl.indexOf('premium players worldwide') !== -1;
+          });
+          renderBattleMini(games);
+        } catch (e) {
+          console.error('[BattleLog]', e);
+          renderBattleMini([]);
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+
+      loadMembers();
+      loadAnnouncements();
+      loadBattleLog();
+    })();
   </script>
 </body>
 </html>

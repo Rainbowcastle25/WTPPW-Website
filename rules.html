@@ -3,304 +3,283 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rules — Premium Players Worldwide</title>
-  <meta name="description" content="Premium Players Worldwide rules, code of conduct, and disciplinary procedures." />
-  <meta name="theme-color" content="#000000" />
-  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <title>Rules — PPW Squadron</title>
+  <meta name="theme-color" content="#07060A" />
+  <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
+  <link rel="icon" href="images/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .rule-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media (max-width: 900px) { .rule-cols { grid-template-columns: 1fr; } }
+
+    .rule-col {
+      position: relative;
+      padding: 1.75rem;
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+    }
+    .rule-col.expected {
+      background: linear-gradient(180deg, rgba(45,224,140,0.04), transparent 40%), var(--ink-1);
+      border-color: rgba(45,224,140,0.20);
+    }
+    .rule-col.prohibited {
+      background: linear-gradient(180deg, rgba(255,85,119,0.04), transparent 40%), var(--ink-1);
+      border-color: rgba(255,85,119,0.20);
+    }
+    .rule-col::before { content: ""; position: absolute; top: 0; left: 0; width: 80px; height: 2px; }
+    .rule-col.expected::before { background: var(--win); }
+    .rule-col.prohibited::before { background: var(--loss); }
+
+    .rule-col-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--purple-line);
+    }
+    .rule-col-head .tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .rule-col.expected .rule-col-head .tag { color: var(--win); }
+    .rule-col.prohibited .rule-col-head .tag { color: var(--loss); }
+    .rule-col-head h3 { font-size: 1.05rem; letter-spacing: 0.08em; margin: 0.35rem 0 0; }
+    .rule-col-head .count { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.16em; color: var(--fg-mute); text-transform: uppercase; }
+
+    .rule-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      counter-reset: ruleline;
+    }
+    .rule-list li {
+      counter-increment: ruleline;
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 0.85rem;
+      align-items: start;
+      padding: 0.7rem 0.85rem;
+      background: var(--ink-0);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      font-size: 0.92rem;
+      color: var(--fg-soft);
+      line-height: 1.5;
+      transition: all var(--t);
+    }
+    .rule-list li:hover { background: var(--ink-2); color: var(--fg); }
+    .rule-list li::before {
+      content: counter(ruleline, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: var(--fg-mute);
+      text-align: center;
+      padding-top: 0.15rem;
+    }
+    .rule-col.expected .rule-list li:hover { border-color: rgba(45,224,140,0.3); }
+    .rule-col.expected .rule-list li::before { color: var(--win); }
+    .rule-col.prohibited .rule-list li:hover { border-color: rgba(255,85,119,0.3); }
+    .rule-col.prohibited .rule-list li::before { color: var(--loss); }
+
+    .escalation {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      overflow: hidden;
+    }
+    .esc { padding: 1.5rem; border-right: 1px solid var(--purple-line); position: relative; }
+    .esc:last-child { border-right: none; }
+    .esc::after {
+      content: "→";
+      position: absolute;
+      top: 50%; right: -10px;
+      transform: translateY(-50%);
+      background: var(--ink-0);
+      color: var(--gold);
+      font-family: var(--font-mono);
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--gold-line);
+      border-radius: 999px;
+      z-index: 2;
+    }
+    .esc:last-child::after { display: none; }
+    .esc .stage { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.2em; color: var(--purple-2); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .esc h3 { margin-bottom: 0.5rem; font-size: 1rem; }
+    .esc p { font-size: 0.84rem; color: var(--fg-soft); }
+    @media (max-width: 800px) {
+      .escalation { grid-template-columns: 1fr; }
+      .esc { border-right: none; border-bottom: 1px solid var(--purple-line); }
+      .esc:last-child { border-bottom: none; }
+      .esc::after { display: none; }
+    }
+  </style>
 </head>
 <body>
-
-  <!-- ===== NAVIGATION ===== -->
-  <nav class="navbar">
+  <nav class="nav">
     <div class="container">
       <a href="index.html" class="nav-brand">
-        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
-        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+        <img src="images/logo.png" alt="PPW" />
+        <div><span class="name">Premium Players</span><span class="sub">SQDN · WTPPW · EST 2020</span></div>
       </a>
       <ul class="nav-links" id="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="members.html">Members</a></li>
-        <li><a href="battles.html">Battles</a></li>
-        <li><a href="elo.html">ELO</a></li>
-        <li><a href="tournaments.html">Tournaments</a></li>
-        <li><a href="recruitment.html">Join Us</a></li>
-        <li><a href="rules.html" class="active">Rules</a></li>
-        <li><a href="values.html">Values</a></li>
+        <li><a href="index.html"       data-num="01">Home</a></li>
+        <li><a href="members.html"     data-num="02">Roster</a></li>
+        <li><a href="elo.html"         data-num="03">ELO</a></li>
+        <li><a href="battles.html"     data-num="04">Battles</a></li>
+        <li><a href="tournaments.html" data-num="05">Tournaments</a></li>
+        <li><a href="recruitment.html" data-num="06">Enlist</a></li>
+        <li><a href="rules.html"       data-num="07" class="active">Rules</a></li>
+        <li><a href="values.html"      data-num="08">Values</a></li>
       </ul>
-      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <a href="recruitment.html" class="btn btn-primary btn-sm nav-cta">Enlist <span class="caret"></span></a>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle nav" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <!-- ===== PAGE HERO ===== -->
-  <div class="page-hero">
-    <div class="container">
-      <p class="breadcrumb">
-        <a href="index.html">Home</a>
-        <span>/</span>
-        Rules
-      </p>
-      <div class="section-label">Code of Conduct</div>
-      <h1>Squadron Rules</h1>
-      <p class="text-muted mt-2" style="max-width: 540px;">
-        All members are expected to read and abide by these rules. Ignorance of the
-        rules is not an excuse for breaking them.
-      </p>
-    </div>
-  </div>
+  <main class="site">
+    <header class="page-hero">
+      <div class="container">
+        <p class="crumbs"><a href="index.html">Home</a><span class="sep">/</span><span>Rules &amp; Conduct</span></p>
+        <div class="eyebrow"><span class="num">07</span><span class="label">Squadron Charter</span></div>
+        <h1 class="mt-2">Rules &amp; Conduct</h1>
+        <p class="text-soft mt-2" style="max-width: 580px;">
+          Short, plain language. Every member agrees to these when they accept the tag.
+          Officers enforce them consistently, full stop.
+        </p>
+        <div class="spec-strip">
+          <div><span class="k">DOC</span><span class="v">RUL-CHTR-001</span></div>
+          <div><span class="k">SCOPE</span><span class="v">ALL MEMBERS</span></div>
+          <div><span class="k">CHANNEL</span><span class="v">#RULES · DISCORD</span></div>
+          <div><span class="k">AUTH</span><span class="v">COMMAND STAFF</span></div>
+        </div>
+      </div>
+    </header>
 
-  <!-- ===== GENERAL RULES ===== -->
-  <section id="conduct">
-    <div class="container">
-      <div class="section-label">General</div>
-      <h2 class="section-heading">Code of Conduct</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        These rules apply to all members at all times, both in-game and on our Discord server.
-      </p>
-
-      <div class="grid-2" style="align-items: start;">
-        <div>
-          <div class="card" style="margin-bottom: 1.5rem;">
-            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--color-accent);">✅ Expected Behaviour</h3>
-            <ul class="rules-list">
-              <li>
-                <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Treat all members and opponents with respect at all times.</span>
-              </li>
-              <li>
-                <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Communicate clearly and constructively in battles and on Discord.</span>
-              </li>
-              <li>
-                <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Represent PPW with good sportsmanship in public lobbies.</span>
-              </li>
-              <li>
-                <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Follow officer instructions during organised squadron events.</span>
-              </li>
-              <li>
-                <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Report issues or concerns to an officer rather than handling them alone.</span>
-              </li>
-              <li>
-                <svg class="rule-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Stay reasonably active — notify an officer before extended absences.</span>
-              </li>
-            </ul>
+    <section id="conduct" style="padding-top: 1rem;">
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">07·A</span><span class="label">Code of Conduct</span></div>
+            <h2 class="mt-2">Expected &amp; Prohibited Behaviour</h2>
           </div>
+          <div class="right">All Members</div>
         </div>
 
-        <div>
-          <div class="card">
-            <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--color-red);">🚫 Prohibited Behaviour</h3>
-            <ul class="rules-list">
-              <li>
-                <svg class="rule-icon red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                <span>Harassment, bullying, or targeted toxicity toward any player.</span>
-              </li>
-              <li>
-                <svg class="rule-icon red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                <span>Intentional team-killing or griefing of squadron members.</span>
-              </li>
-              <li>
-                <svg class="rule-icon red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                <span>Use of cheats, exploits, or third-party software that violates Gaijin's ToS.</span>
-              </li>
-              <li>
-                <svg class="rule-icon red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                <span>Sharing squadron internal information or plans with rival squadrons.</span>
-              </li>
-              <li>
-                <svg class="rule-icon red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                <span>Discriminatory language, hate speech, or political arguments.</span>
-              </li>
-              <li>
-                <svg class="rule-icon red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                <span>Spamming, advertising, or posting off-topic content in Discord channels.</span>
-              </li>
-              <li>
-                <svg class="rule-icon red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                <span>Posting NSFW, graphic, or sexually explicit content anywhere in the server.</span>
-              </li>
-            </ul>
+        <div class="rule-cols">
+          <div class="rule-col expected">
+            <div class="rule-col-head">
+              <div>
+                <div class="tag"><span class="dot live"></span>Authorised</div>
+                <h3>Expected Behaviour</h3>
+              </div>
+              <span class="count">06 · Items</span>
+            </div>
+            <ol class="rule-list">
+              <li>Treat all members and opponents with respect at all times.</li>
+              <li>Communicate clearly and constructively in battles and on Discord.</li>
+              <li>Represent PPW with good sportsmanship in public lobbies.</li>
+              <li>Follow officer instructions during organised squadron events.</li>
+              <li>Report issues or concerns to an officer rather than handling them alone.</li>
+              <li>Stay reasonably active — notify an officer before extended absences.</li>
+            </ol>
+          </div>
+
+          <div class="rule-col prohibited">
+            <div class="rule-col-head">
+              <div>
+                <div class="tag"><span class="dot danger"></span>Restricted</div>
+                <h3>Prohibited Behaviour</h3>
+              </div>
+              <span class="count">07 · Items</span>
+            </div>
+            <ol class="rule-list">
+              <li>Harassment, bullying, or targeted toxicity toward any player.</li>
+              <li>Intentional team-killing or griefing of squadron members.</li>
+              <li>Use of cheats, exploits, or third-party software that violates Gaijin's ToS.</li>
+              <li>Sharing squadron internal information or plans with rival squadrons.</li>
+              <li>Discriminatory language, hate speech, or political arguments.</li>
+              <li>Spamming, advertising, or posting off-topic content in Discord channels.</li>
+              <li>Posting NSFW, graphic, or sexually explicit content anywhere in the server.</li>
+            </ol>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== IN-GAME RULES ===== -->
-  <section style="background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
-    <div class="container">
-      <div class="section-label">In-Game</div>
-      <h2 class="section-heading">In-Game Rules</h2>
-      <div class="divider"></div>
-      <p class="section-intro">Specific rules that apply during War Thunder matches.</p>
+    <section style="background: linear-gradient(180deg, var(--ink-1), var(--ink-0));">
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">07·B</span><span class="label">Disciplinary Procedure</span></div>
+            <h2 class="mt-2">Escalation Path</h2>
+          </div>
+          <div class="right">Applied Consistently</div>
+        </div>
 
-      <div class="grid-3">
-        <div class="card">
-          <div class="card-icon">🎯</div>
-          <h3>Play Objectives</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Always prioritise objectives over farming kills. Cap zones, support
-            your team, and play the game mode as intended.
-          </p>
+        <div class="escalation">
+          <div class="esc">
+            <div class="stage">STAGE 01</div>
+            <h3>Quiet Word</h3>
+            <p>An officer takes you aside in DM. Most issues end here.</p>
+          </div>
+          <div class="esc">
+            <div class="stage">STAGE 02</div>
+            <h3>Formal Warning</h3>
+            <p>Recorded warning, logged. Two warnings inside 90 days escalate to the next stage.</p>
+          </div>
+          <div class="esc">
+            <div class="stage">STAGE 03</div>
+            <h3>Suspension</h3>
+            <p>Temporary removal from squadron ops and channels, typically 1–2 weeks. Squadron tag stays.</p>
+          </div>
+          <div class="esc">
+            <div class="stage">STAGE 04</div>
+            <h3>Removal</h3>
+            <p>Tag removed. For severe violations (cheats, harassment) we skip directly to this stage.</p>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-icon">🗣️</div>
-          <h3>Use Comms</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Call out enemy positions, tank destroyers, and air threats in the
-            squad chat. Even short pings are helpful.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🤝</div>
-          <h3>Support Squadmates</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Prioritise helping your squad over individual glory. Spot,
-            extinguish fires, and revive crew where possible.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-icon">⚖️</div>
-          <h3>Respect the BR</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            When playing in squad, try to stay within similar BRs to avoid
-            dragging teammates into unfair match-ups.
-          </p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🎖️</div>
-          <h3>Sportsmanship</h3>
-          <p class="text-muted" style="font-size:0.88rem; margin-top:0.4rem;">
-            Win and lose gracefully. Compliment great plays from opponents —
-            PPW should be known for good conduct.
-          </p>
-        </div>
+
+        <p class="text-soft mt-6" style="max-width: 720px;">
+          Disputes go to the Commander and Executive Officer. If you feel you've been treated unfairly,
+          raise it — we'd rather have an awkward conversation than lose a good member to a misunderstanding.
+        </p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== DISCIPLINARY ===== -->
-  <section>
-    <div class="container">
-      <div class="section-label">Enforcement</div>
-      <h2 class="section-heading">Disciplinary Procedure</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        We aim to be fair. Most issues are resolved through communication.
-        The following procedure applies for rule violations.
-      </p>
-
-      <div class="grid-2" style="align-items: start; max-width: 800px;">
-        <div class="card">
-          <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">
-            <span style="color: var(--color-accent);">Step 1 —</span> Verbal Warning
-          </h3>
-          <p class="text-muted" style="font-size: 0.88rem; margin: 0;">
-            An officer will privately message the member to discuss the issue and
-            explain why the behaviour is unacceptable.
-          </p>
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="name">Premium Players Worldwide</div>
+            <p class="text-soft">A War Thunder squadron and familia since 2020.</p>
+            <div class="mil mt-3"><span class="sep">//</span> SQDN · WTPPW <span class="sep">·</span> EST 2020</div>
+          </div>
+          <div><h4>Navigation</h4><ul><li><a href="index.html">Home</a></li><li><a href="members.html">Roster</a></li><li><a href="elo.html">ELO</a></li><li><a href="battles.html">Battles</a></li></ul></div>
+          <div><h4>Quick Info</h4><ul><li><a href="recruitment.html">Enlist</a></li><li><a href="rules.html">Rules</a></li><li><a href="values.html">Values</a></li></ul></div>
+          <div><h4>Community</h4><ul><li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord</a></li><li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Page</a></li></ul></div>
         </div>
-        <div class="card">
-          <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">
-            <span style="color: var(--color-accent);">Step 2 —</span> Formal Warning
-          </h3>
-          <p class="text-muted" style="font-size: 0.88rem; margin: 0;">
-            A formal warning is issued and recorded. The member is placed on a
-            two-week probationary period.
-          </p>
-        </div>
-        <div class="card">
-          <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">
-            <span style="color: var(--color-accent);">Step 3 —</span> Rank Demotion
-          </h3>
-          <p class="text-muted" style="font-size: 0.88rem; margin: 0;">
-            Continued violations result in demotion to Private rank, restricting
-            access to officer-only channels and events.
-          </p>
-        </div>
-        <div class="card">
-          <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">
-            <span style="color: var(--color-red);">Step 4 —</span> Removal
-          </h3>
-          <p class="text-muted" style="font-size: 0.88rem; margin: 0;">
-            Persistent violations, or any single severe breach (cheating,
-            hate speech, team-killing), result in immediate removal from the squadron.
-          </p>
-        </div>
+        <div class="footer-bottom"><span>© 2025 Premium Players Worldwide</span><span>War Thunder · Gaijin Entertainment</span></div>
       </div>
+    </footer>
+  </main>
 
-      <div class="alert alert-info mt-4" style="max-width: 680px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;color:var(--color-accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>
-          <strong>Appeals:</strong> If you believe a disciplinary action was unfair, you may appeal
-          directly to the Commander within 48 hours. Provide evidence and a clear explanation.
-          The Commander's decision is final.
-        </span>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <div class="footer-brand-name">Premium Players Worldwide</div>
-          <p class="footer-brand-desc">
-            A War Thunder squadron dedicated to teamwork, tactical play, and a
-            welcoming community for players of all skill levels.
-          </p>
-        </div>
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="members.html">Members</a></li>
-            <li><a href="recruitment.html">Join Us</a></li>
-            <li><a href="rules.html">Rules</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Quick Info</h4>
-          <ul>
-            <li><a href="recruitment.html#requirements">Requirements</a></li>
-            <li><a href="rules.html#conduct">Code of Conduct</a></li>
-            <li><a href="members.html#officers">Officers</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Community</h4>
-          <ul>
-            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
-            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
-        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    var btn = document.getElementById('nav-toggle');
-    var menu = document.getElementById('nav-links');
-    btn.addEventListener('click', function () {
-      var open = menu.classList.toggle('open');
-      btn.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', open);
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

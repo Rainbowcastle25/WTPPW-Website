@@ -3,304 +3,230 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Our Values — Premium Players Worldwide</title>
-  <meta name="description" content="The six core values that guide every member of Premium Players Worldwide — in battle and beyond." />
-  <meta name="theme-color" content="#000000" />
-  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <title>Values — PPW Squadron</title>
+  <meta name="theme-color" content="#07060A" />
+  <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
+  <link rel="icon" href="images/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    .value-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      transition: border-color 0.2s;
+    .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    @media (max-width: 900px) { .value-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 580px) { .value-grid { grid-template-columns: 1fr; } }
+
+    .value {
+      position: relative;
+      padding: 2rem 1.75rem;
+      background: linear-gradient(180deg, rgba(139,43,226,0.06), transparent 70%), var(--ink-1);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      transition: all var(--t);
+      overflow: hidden;
     }
-    .value-card:hover {
-      border-color: var(--color-accent);
+    .value:hover { border-color: var(--gold); box-shadow: 0 0 32px -16px var(--gold-glow); }
+    .value::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--gold), transparent);
     }
-    .value-card-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+    .value .num {
+      position: absolute;
+      top: 1rem; right: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--purple-2);
     }
-    .value-card-icon {
-      font-size: 2rem;
-      line-height: 1;
-      flex-shrink: 0;
+    .value .glyph {
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--gold);
+      border: 1.5px solid var(--gold-line);
+      border-radius: var(--r);
+      background: rgba(255,184,0,0.06);
+      margin-bottom: 1.5rem;
     }
-    .value-card-title {
-      font-family: 'Oswald', sans-serif;
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--color-heading);
-      letter-spacing: 0.04em;
+    .value h3 { font-size: 1.3rem; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+    .value .tag { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase; margin-bottom: 1rem; }
+    .value p { color: var(--fg-soft); font-size: 0.93rem; }
+
+    .charter-block {
+      padding: 3rem;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(255,184,0,0.08), transparent 50%),
+        radial-gradient(circle at 10% 90%, rgba(139,43,226,0.14), transparent 50%),
+        var(--ink-1);
+      border: 1px solid var(--purple-line-2);
+      border-radius: var(--r);
+      position: relative;
+      overflow: hidden;
+    }
+    .charter-block::before {
+      content: "// CHARTER · WTPPW · 2020";
+      position: absolute;
+      top: 1.5rem; right: 2rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+    }
+    .charter-block .quote {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 2.5vw, 2rem);
+      line-height: 1.3;
+      color: #fff;
+      letter-spacing: 0.02em;
+      max-width: 760px;
+      text-transform: none;
+    }
+    .charter-block .by {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      color: var(--gold);
       text-transform: uppercase;
-      margin: 0;
-    }
-    .value-card-motto {
-      font-size: 0.9rem;
-      font-style: italic;
-      color: var(--color-accent);
-      margin: 0;
-    }
-    .value-card-examples {
-      margin: 0.25rem 0 0;
-      padding-left: 0;
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.55rem;
-    }
-    .value-card-examples li {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.6rem;
-      font-size: 0.9rem;
-      color: var(--color-text);
-      line-height: 1.5;
-    }
-    .value-card-examples li::before {
-      content: '';
-      display: block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--color-accent);
-      flex-shrink: 0;
-      margin-top: 0.5em;
-    }
-    .values-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
     }
   </style>
 </head>
 <body>
-
-  <!-- ===== NAVIGATION ===== -->
-  <nav class="navbar">
+  <nav class="nav">
     <div class="container">
       <a href="index.html" class="nav-brand">
-        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
-        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+        <img src="images/logo.png" alt="PPW" />
+        <div><span class="name">Premium Players</span><span class="sub">SQDN · WTPPW · EST 2020</span></div>
       </a>
       <ul class="nav-links" id="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="members.html">Members</a></li>
-        <li><a href="battles.html">Battles</a></li>
-        <li><a href="elo.html">ELO</a></li>
-        <li><a href="tournaments.html">Tournaments</a></li>
-        <li><a href="recruitment.html">Join Us</a></li>
-        <li><a href="rules.html">Rules</a></li>
-        <li><a href="values.html" class="active">Values</a></li>
+        <li><a href="index.html"       data-num="01">Home</a></li>
+        <li><a href="members.html"     data-num="02">Roster</a></li>
+        <li><a href="elo.html"         data-num="03">ELO</a></li>
+        <li><a href="battles.html"     data-num="04">Battles</a></li>
+        <li><a href="tournaments.html" data-num="05">Tournaments</a></li>
+        <li><a href="recruitment.html" data-num="06">Enlist</a></li>
+        <li><a href="rules.html"       data-num="07">Rules</a></li>
+        <li><a href="values.html"      data-num="08" class="active">Values</a></li>
       </ul>
-      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <a href="recruitment.html" class="btn btn-primary btn-sm nav-cta">Enlist <span class="caret"></span></a>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle nav" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <!-- ===== PAGE HERO ===== -->
-  <div class="page-hero">
-    <div class="container">
-      <p class="breadcrumb">
-        <a href="index.html">Home</a>
-        <span>/</span>
-        Our Values
-      </p>
-      <div class="section-label">Who We Are</div>
-      <h1>Our Values</h1>
-      <p class="text-muted mt-2" style="max-width: 560px;">
-        PPW is built on six principles that guide every member — in battle and beyond.
-        These aren't just words; they're the standard we hold ourselves to every day.
-      </p>
-    </div>
-  </div>
-
-  <!-- ===== VALUES ===== -->
-  <section>
-    <div class="container">
-      <div class="section-label">Six Principles</div>
-      <h2 class="section-heading">The PPW Standard</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        Every member of PPW is expected to uphold these values — whether you're
-        leading a Squadron Battle, helping a recruit, or just chatting in Discord.
-      </p>
-
-      <div class="values-grid">
-
-        <div class="value-card">
-          <div class="value-card-header">
-            <span class="value-card-icon">🏆</span>
-            <div>
-              <h2 class="value-card-title">Excellence</h2>
-              <p class="value-card-motto">Always push to be better.</p>
-            </div>
-          </div>
-          <ul class="value-card-examples">
-            <li>Review your own replays and study what went wrong — growth starts with honest self-assessment.</li>
-            <li>Ask for loadout feedback and share advice freely; the whole squadron improves when individuals improve.</li>
-            <li>Always strive to improve your skills and game knowledge, whether that's learning a new BR range, a new nation, or better comms.</li>
-          </ul>
+  <main class="site">
+    <header class="page-hero">
+      <div class="container">
+        <p class="crumbs"><a href="index.html">Home</a><span class="sep">/</span><span>Values · Familia Code</span></p>
+        <div class="eyebrow"><span class="num">08</span><span class="label">Familia Code</span></div>
+        <h1 class="mt-2">Six Principles</h1>
+        <p class="text-soft mt-2" style="max-width: 580px;">
+          The values that shape who we are — in battle, in voice chat, and in the world outside the game.
+        </p>
+        <div class="spec-strip">
+          <div><span class="k">DOC</span><span class="v">VAL-CODE-001</span></div>
+          <div><span class="k">EST</span><span class="v">2020</span></div>
+          <div><span class="k">PRINCIPLES</span><span class="v">SIX</span></div>
+          <div><span class="k">SCOPE</span><span class="v">ALL MEMBERS</span></div>
         </div>
-
-        <div class="value-card">
-          <div class="value-card-header">
-            <span class="value-card-icon">⚖️</span>
-            <div>
-              <h2 class="value-card-title">Integrity</h2>
-              <p class="value-card-motto">Uphold both the letter and the spirit of our rules.</p>
-            </div>
-          </div>
-          <ul class="value-card-examples">
-            <li>No cheating, exploit abuse, or use of any software that violates Gaijin's Terms of Service — ever.</li>
-            <li>Be honest about your stats and skill level when applying; we'd rather know the truth than discover it later.</li>
-            <li>Never hide information that would affect a decision. Technically staying within the rules while deliberately misleading the squadron is still a breach of integrity.</li>
-          </ul>
-        </div>
-
-        <div class="value-card">
-          <div class="value-card-header">
-            <span class="value-card-icon">🤲</span>
-            <div>
-              <h2 class="value-card-title">Charity</h2>
-              <p class="value-card-motto">Give back to the people around you.</p>
-            </div>
-          </div>
-          <ul class="value-card-examples">
-            <li>Take time to teach newer members game mechanics — not everyone starts at the same level, and that's okay.</li>
-            <li>Share research tips, BR meta knowledge, and loadout advice without gatekeeping.</li>
-            <li>Keep your patience when teammates make mistakes. Everyone learns at their own pace — frustration helps no one.</li>
-          </ul>
-        </div>
-
-        <div class="value-card">
-          <div class="value-card-header">
-            <span class="value-card-icon">🔗</span>
-            <div>
-              <h2 class="value-card-title">Loyalty</h2>
-              <p class="value-card-motto">Show up and stay committed.</p>
-            </div>
-          </div>
-          <ul class="value-card-examples">
-            <li>If you sign up for a Squadron Battle, be there — no-showing without warning leaves your team a man short.</li>
-            <li>Stay reasonably active; if life gets in the way, let an officer know so we don't wonder where you went.</li>
-            <li>Don't abandon battles mid-match — see it through with your squad, regardless of the score.</li>
-          </ul>
-        </div>
-
-        <div class="value-card">
-          <div class="value-card-header">
-            <span class="value-card-icon">🎖️</span>
-            <div>
-              <h2 class="value-card-title">Respect</h2>
-              <p class="value-card-motto">Treat everyone with dignity.</p>
-            </div>
-          </div>
-          <ul class="value-card-examples">
-            <li>No trash talk to teammates or enemies — sportsmanship applies in every lobby, not just PPW events.</li>
-            <li>Offer constructive criticism only; there's always a way to give feedback that doesn't tear someone down.</li>
-            <li>Zero tolerance for harassment, discrimination, or hate speech — this is a welcoming community, full stop.</li>
-          </ul>
-        </div>
-
-        <div class="value-card">
-          <div class="value-card-header">
-            <span class="value-card-icon">🤝</span>
-            <div>
-              <h2 class="value-card-title">Selfless Service</h2>
-              <p class="value-card-motto">Put the team above your own stats.</p>
-            </div>
-          </div>
-          <ul class="value-card-examples">
-            <li>Cap zones, hold flanks, and play the objective — farming kills while your team loses a cap is not a PPW way to play.</li>
-            <li>Spot for teammates, call out threats, and cover retreats even when there's nothing in it for your score.</li>
-            <li>Step up when the squadron needs you — volunteer for officer duties, help organise events, or just be the first one to join a struggling squad.</li>
-          </ul>
-        </div>
-
       </div>
-    </div>
-  </section>
+    </header>
 
-  <!-- ===== CTA ===== -->
-  <section style="background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: 4rem 0;">
-    <div class="container text-center">
-      <div class="section-label" style="margin: 0 auto 0.75rem;">Ready to Commit?</div>
-      <h2 style="margin-bottom: 1rem;">Live the Standard</h2>
-      <p class="text-muted" style="max-width: 480px; margin: 0 auto 2rem;">
-        If these values sound like you, we want you in the squadron.
-        Check the requirements and apply today.
-      </p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <a href="recruitment.html" class="btn btn-primary">How to Join</a>
-        <a href="rules.html" class="btn btn-outline">Read the Rules</a>
+    <section style="padding-top: 1rem;">
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">08·A</span><span class="label">Principles</span></div>
+            <h2 class="mt-2">What We Stand For</h2>
+          </div>
+          <div class="right">6 · Charter Values</div>
+        </div>
+
+        <div class="value-grid">
+          <article class="value">
+            <span class="num">P-01</span>
+            <div class="glyph">EX</div>
+            <div class="tag">// EXCELLENCE</div>
+            <h3>Always push to be better.</h3>
+            <p>We share replays, dissect mistakes, and study the meta together. Skill is a verb — practiced every match, every patch, every season.</p>
+          </article>
+          <article class="value">
+            <span class="num">P-02</span>
+            <div class="glyph">IN</div>
+            <div class="tag">// INTEGRITY</div>
+            <h3>Letter and spirit.</h3>
+            <p>We uphold the rules of the game and the rules of the squadron — even when no officer is watching. Especially then.</p>
+          </article>
+          <article class="value">
+            <span class="num">P-03</span>
+            <div class="glyph">CH</div>
+            <div class="tag">// CHARITY</div>
+            <h3>Give back.</h3>
+            <p>Mentor a newer pilot. Share your lineup. Spot a teammate before you spot yourself. We rise together or we don't rise at all.</p>
+          </article>
+          <article class="value">
+            <span class="num">P-04</span>
+            <div class="glyph">LO</div>
+            <div class="tag">// LOYALTY</div>
+            <h3>Show up.</h3>
+            <p>Commit to the people who commit to you. The wing on your tag means you're not flying alone — and neither are they.</p>
+          </article>
+          <article class="value">
+            <span class="num">P-05</span>
+            <div class="glyph">RE</div>
+            <div class="tag">// RESPECT</div>
+            <h3>Dignity, always.</h3>
+            <p>Inside the squadron and outside it. With teammates, opponents, and strangers in the channel. Toxicity is not a strategy.</p>
+          </article>
+          <article class="value">
+            <span class="num">P-06</span>
+            <div class="glyph">SS</div>
+            <div class="tag">// SELFLESS SERVICE</div>
+            <h3>The team above the stat.</h3>
+            <p>A capture is worth ten kills. The win is worth ten captures. The familia is worth all of it.</p>
+          </article>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== FOOTER ===== -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <div class="footer-brand-name">Premium Players Worldwide</div>
-          <p class="footer-brand-desc">
-            A War Thunder squadron dedicated to teamwork, tactical play, and a
-            welcoming community for players of all skill levels.
+    <section>
+      <div class="container">
+        <div class="charter-block">
+          <p class="quote">
+            "We are not just a tag on the side of a hangar. We are a familia — players who showed up for each
+            other before the squadron existed, and who'll be flying together long after we hang up the joysticks.
+            The wing of WTPPW is a promise to the person next to you."
           </p>
+          <div class="by">— PPW Charter · 12 March 2020</div>
         </div>
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="members.html">Members</a></li>
-            <li><a href="recruitment.html">Join Us</a></li>
-            <li><a href="rules.html">Rules</a></li>
-            <li><a href="values.html">Values</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Quick Info</h4>
-          <ul>
-            <li><a href="recruitment.html#requirements">Requirements</a></li>
-            <li><a href="rules.html#conduct">Code of Conduct</a></li>
-            <li><a href="members.html#officers">Officers</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Community</h4>
-          <ul>
-            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
-            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
-        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
-      </div>
-    </div>
-  </footer>
 
-  <script>
-    var btn = document.getElementById('nav-toggle');
-    var menu = document.getElementById('nav-links');
-    btn.addEventListener('click', function () {
-      var open = menu.classList.toggle('open');
-      btn.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', open);
-    });
-  </script>
+        <div class="text-center mt-6">
+          <a href="recruitment.html" class="btn btn-primary">Wear the Tag <span class="caret"></span></a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="name">Premium Players Worldwide</div>
+            <p class="text-soft">A War Thunder squadron and familia since 2020.</p>
+            <div class="mil mt-3"><span class="sep">//</span> SQDN · WTPPW <span class="sep">·</span> EST 2020</div>
+          </div>
+          <div><h4>Navigation</h4><ul><li><a href="index.html">Home</a></li><li><a href="members.html">Roster</a></li><li><a href="elo.html">ELO</a></li><li><a href="battles.html">Battles</a></li></ul></div>
+          <div><h4>Quick Info</h4><ul><li><a href="recruitment.html">Enlist</a></li><li><a href="rules.html">Rules</a></li><li><a href="values.html">Values</a></li></ul></div>
+          <div><h4>Community</h4><ul><li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord</a></li><li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Page</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><span>© 2025 Premium Players Worldwide</span><span>War Thunder · Gaijin Entertainment</span></div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>

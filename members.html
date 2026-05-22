@@ -3,1032 +3,405 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Members — Premium Players Worldwide</title>
-  <meta name="description" content="Full roster of Premium Players Worldwide (PPW) members, officers, and commanders." />
-  <meta name="theme-color" content="#000000" />
-  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <title>Roster · Pilot Dossiers — PPW Squadron</title>
+  <meta name="description" content="Full roster of Premium Players Worldwide members — pilot dossiers, ranks, service records, and medals." />
+  <meta name="theme-color" content="#07060A" />
+  <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
+  <link rel="icon" href="images/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <meta name="ppw-roster-api" content="https://ppw-api.ensignenterprises.com" />
-  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
+  <style>
+    /* ===== MEMBERS PAGE ===== */
+
+    .command-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    @media (max-width: 900px) { .command-grid { grid-template-columns: 1fr; } }
+
+    .command-card {
+      position: relative;
+      padding: 0;
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line-2);
+      border-radius: var(--r);
+      overflow: hidden;
+      transition: all var(--t);
+    }
+    .command-card:hover { border-color: var(--gold); box-shadow: 0 0 32px -12px var(--gold-glow); }
+    .command-card .top {
+      position: relative;
+      padding: 2rem 1.5rem 1.5rem;
+      background:
+        radial-gradient(circle at 70% 20%, rgba(255,184,0,0.10), transparent 50%),
+        linear-gradient(180deg, rgba(139,43,226,0.15), transparent 60%);
+      border-bottom: 1px solid var(--purple-line);
+    }
+    .command-card .rank-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .command-card .insignia {
+      width: 56px; height: 56px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--gold);
+      border-radius: var(--r);
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--gold);
+      background: rgba(255,184,0,0.06);
+      position: relative;
+    }
+    .command-card .insignia::before, .command-card .insignia::after { content: ""; position: absolute; width: 8px; height: 8px; }
+    .command-card .insignia::before { top: -1px; left: -1px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); }
+    .command-card .insignia::after { bottom: -1px; right: -1px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); }
+    .command-card .badge-line { text-align: right; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+    .command-card .role { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--purple-2); margin-bottom: 0.5rem; }
+    .command-card .callsign { font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 0.04em; color: #fff; text-transform: uppercase; line-height: 1; margin-bottom: 0.3rem; }
+    .command-card .duty { font-size: 0.88rem; color: var(--fg-soft); }
+    .command-card .bottom { padding: 1.25rem 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; border-top: 1px dashed var(--purple-line); }
+    .command-card .stat-mini .k { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-mute); margin-bottom: 0.25rem; }
+    .command-card .stat-mini .v { font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 0.04em; color: var(--gold); }
+
+    .roster-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+    .rs-card { padding: 1rem 1.25rem; background: var(--ink-1); border: 1px solid var(--purple-line); border-radius: var(--r); }
+    .rs-card .k { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-mute); margin-bottom: 0.4rem; }
+    .rs-card .v { font-family: var(--font-display); font-size: 1.6rem; letter-spacing: 0.04em; color: var(--gold); }
+    .rs-card .meta { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em; color: var(--fg-mute); margin-top: 0.3rem; }
+    @media (max-width: 720px) { .roster-summary { grid-template-columns: repeat(2, 1fr); } }
+
+    .toolbar { display: flex; gap: 0.75rem; padding: 1rem 1.25rem; background: var(--ink-1); border: 1px solid var(--purple-line); border-radius: var(--r); margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+    .toolbar .search { flex: 1 1 240px; display: flex; align-items: center; gap: 0.5rem; padding: 0 0.85rem; height: 38px; background: var(--ink-0); border: 1px solid var(--purple-line); border-radius: var(--r); }
+    .toolbar .search input { flex: 1; background: transparent; border: none; outline: none; color: var(--fg); font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.06em; }
+    .toolbar .search input::placeholder { color: var(--fg-mute); }
+    .toolbar .search:focus-within { border-color: var(--gold); }
+    .toolbar .search svg { width: 14px; height: 14px; color: var(--fg-mute); flex-shrink: 0; }
+    .toolbar select, .toolbar .seg { height: 38px; padding: 0 0.85rem; background: var(--ink-0); border: 1px solid var(--purple-line); border-radius: var(--r); color: var(--fg); font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.1em; cursor: pointer; }
+    .toolbar select:hover, .toolbar select:focus { border-color: var(--gold); outline: none; }
+
+    .seg { display: inline-flex; align-items: center; gap: 0; padding: 0; overflow: hidden; }
+    .seg button { height: 100%; padding: 0 0.9rem; background: transparent; border: none; color: var(--fg-mute); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; border-right: 1px solid var(--purple-line); transition: all var(--t); }
+    .seg button:last-child { border-right: none; }
+    .seg button.active { color: var(--gold); background: rgba(255,184,0,0.06); }
+    .seg button:hover { color: var(--gold); }
+
+    .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+
+    .dossier {
+      position: relative;
+      padding: 1.25rem;
+      background: var(--ink-1);
+      border: 1px solid var(--purple-line);
+      border-radius: var(--r);
+      cursor: pointer;
+      transition: all var(--t);
+      overflow: hidden;
+    }
+    .dossier::before { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--rank-color, var(--fg-mute)); opacity: 0.6; transition: opacity var(--t); }
+    .dossier:hover { border-color: var(--gold); background: var(--ink-2); transform: translateY(-2px); }
+    .dossier:hover::before { opacity: 1; }
+    .dossier.rank-commander { --rank-color: var(--gold); }
+    .dossier.rank-officer { --rank-color: var(--purple-2); }
+    .dossier.rank-sergeant { --rank-color: #6FE5C4; }
+    .dossier.rank-private { --rank-color: var(--fg-mute); }
+
+    .dossier .d-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .dossier .d-num { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.18em; color: var(--fg-mute); }
+    .dossier .d-rank { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.18em; color: var(--rank-color); text-transform: uppercase; }
+    .dossier .d-callsign { font-family: var(--font-display); font-size: 1.3rem; letter-spacing: 0.04em; color: #fff; text-transform: uppercase; line-height: 1.05; margin-bottom: 0.25rem; word-break: break-word; }
+    .dossier .d-spec { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--fg-mute); text-transform: uppercase; }
+    .dossier .d-spec .sep { color: var(--purple-2); margin: 0 0.4em; }
+
+    .dossier .d-mid { margin-top: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .dossier .d-stat .k { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; color: var(--fg-mute); text-transform: uppercase; margin-bottom: 0.15rem; }
+    .dossier .d-stat .v { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: 0.04em; color: #fff; }
+    .dossier .d-stat .v.gold { color: var(--gold); }
+
+    .dossier .d-bar { margin-top: 1rem; }
+    .dossier .d-bar .l { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-mute); margin-bottom: 0.4rem; }
+    .dossier .d-bar .track { height: 4px; background: var(--ink-3); border-radius: 2px; overflow: hidden; }
+    .dossier .d-bar .fill { height: 100%; background: linear-gradient(90deg, var(--purple-2), var(--gold)); border-radius: 2px; }
+
+    .dossier .d-medals { margin-top: 1rem; display: flex; gap: 0.35rem; }
+    .dossier .d-medals .m { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; border: 1px solid var(--gold-line); border-radius: var(--r); color: var(--gold); background: rgba(255,184,0,0.04); }
+    .dossier .d-medals .m.purple { border-color: var(--purple-line-2); color: var(--purple-2); background: rgba(139,43,226,0.06); }
+    .dossier .d-medals .more { font-family: var(--font-mono); font-size: 0.66rem; color: var(--fg-mute); align-self: center; margin-left: 0.2rem; }
+
+    .dossier .d-foot { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed var(--purple-line); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; }
+    .dossier .d-foot .join { color: var(--fg-mute); }
+    .dossier .d-foot .view { color: var(--gold); }
+    .dossier .d-foot .view::after { content: " →"; transition: transform var(--t); display: inline-block; }
+    .dossier:hover .d-foot .view::after { transform: translateX(4px); }
+
+    /* ===== DOSSIER MODAL ===== */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(7,6,10,0.78); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 2rem; opacity: 0; pointer-events: none; transition: opacity var(--t); }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal { position: relative; width: 100%; max-width: 960px; max-height: 88vh; overflow-y: auto; background: var(--ink-1); border: 1px solid var(--purple-line-2); border-radius: var(--r); transform: translateY(20px) scale(0.98); transition: transform var(--t); }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; z-index: 2; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--ink-2); border: 1px solid var(--purple-line-2); border-radius: var(--r); color: var(--fg); font-family: var(--font-mono); font-size: 1rem; cursor: pointer; transition: all var(--t); }
+    .modal-close:hover { border-color: var(--gold); color: var(--gold); }
+
+    .mh { position: relative; padding: 2.5rem 2.5rem 2rem; background: radial-gradient(circle at 80% 0%, rgba(255,184,0,0.10), transparent 50%), linear-gradient(180deg, rgba(139,43,226,0.18), transparent 70%); border-bottom: 1px solid var(--purple-line); }
+    .mh::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--gold) 0, var(--gold) 80px, transparent 80px); }
+    .mh .mh-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-mute); margin-bottom: 1.5rem; }
+    .mh .mh-meta .v { color: var(--fg); }
+    .mh .mh-meta .gold { color: var(--gold); }
+    .mh .mh-callsign { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: 0.04em; color: #fff; text-transform: uppercase; line-height: 1; margin-bottom: 0.5rem; word-break: break-word; }
+    .mh .mh-spec { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); }
+    .mh .mh-spec .sep { color: var(--purple-2); margin: 0 0.5em; }
+    .mh .mh-portrait { position: absolute; top: 2rem; right: 2.5rem; width: 120px; height: 120px; background: repeating-linear-gradient(135deg, rgba(139,43,226,0.08) 0 1px, transparent 1px 8px), var(--ink-0); border: 1px solid var(--purple-line-2); border-radius: var(--r); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 2.6rem; color: var(--gold); letter-spacing: 0.04em; }
+    .mh .mh-portrait::before, .mh .mh-portrait::after { content: ""; position: absolute; width: 12px; height: 12px; }
+    .mh .mh-portrait::before { top: -1px; left: -1px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); }
+    .mh .mh-portrait::after { bottom: -1px; right: -1px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); }
+    @media (max-width: 640px) { .mh { padding: 2rem 1.5rem 1.5rem; } .mh .mh-portrait { position: static; margin-bottom: 1.5rem; width: 80px; height: 80px; font-size: 1.8rem; } }
+
+    .mb { padding: 2rem 2.5rem 2.5rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; }
+    @media (max-width: 800px) { .mb { grid-template-columns: 1fr; padding: 1.5rem; } }
+    .mb h3.sub { font-size: 0.78rem; letter-spacing: 0.18em; color: var(--gold); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--purple-line); }
+
+    .stat-block { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+    .sb-cell { padding: 1rem; background: var(--ink-0); border: 1px solid var(--purple-line); border-radius: var(--r); }
+    .sb-cell .k { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-mute); margin-bottom: 0.4rem; }
+    .sb-cell .v { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 0.04em; color: var(--gold); }
+    .sb-cell .v.win { color: var(--win); }
+    .sb-cell .v.fg { color: #fff; }
+    .sb-cell .delta { font-family: var(--font-mono); font-size: 0.66rem; color: var(--fg-mute); letter-spacing: 0.12em; margin-top: 0.25rem; }
+
+    .spec-bars { display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 2rem; }
+    .spec-bar .l { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-soft); margin-bottom: 0.35rem; }
+    .spec-bar .l .v { color: var(--gold); }
+    .spec-bar .track { height: 6px; background: var(--ink-3); border-radius: 2px; overflow: hidden; }
+    .spec-bar .fill { height: 100%; background: linear-gradient(90deg, var(--purple-2) 0%, var(--gold) 100%); border-radius: 2px; }
+
+    .service-list { display: flex; flex-direction: column; gap: 0; }
+    .service-row { display: grid; grid-template-columns: 90px 1fr; gap: 1rem; padding: 0.7rem 0; border-bottom: 1px dashed var(--purple-line); }
+    .service-row:last-child { border-bottom: none; }
+    .service-row .date { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--gold); text-transform: uppercase; }
+    .service-row .ev { font-size: 0.88rem; color: var(--fg); }
+    .service-row .ev .desc { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--fg-mute); margin-top: 0.15rem; }
+
+    .medal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.6rem; margin-bottom: 2rem; }
+    .medal { position: relative; padding: 1rem 0.5rem 0.75rem; background: var(--ink-0); border: 1px solid var(--purple-line); border-radius: var(--r); text-align: center; transition: all var(--t); }
+    .medal:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 0 20px -8px var(--gold-glow); }
+    .medal.gold { border-color: rgba(255,184,0,0.3); }
+    .medal.gold .ic { color: var(--gold); border-color: var(--gold-line); background: rgba(255,184,0,0.08); }
+    .medal.purple .ic { color: var(--purple-2); border-color: var(--purple-line-2); background: rgba(139,43,226,0.08); }
+    .medal .ic { width: 44px; height: 44px; margin: 0 auto 0.5rem; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.2rem; border: 1px solid var(--purple-line-2); border-radius: var(--r); }
+    .medal .nm { font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 0.04em; color: #fff; text-transform: uppercase; line-height: 1.15; }
+    .medal .ds { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 200px; padding: 0.6rem 0.75rem; background: var(--ink-0); border: 1px solid var(--gold-line); border-radius: var(--r); font-family: var(--font-mono); font-size: 0.7rem; color: var(--fg-soft); text-align: left; z-index: 5; }
+    .medal:hover .ds { display: block; }
+
+    .match-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .match { display: grid; grid-template-columns: 36px 1fr auto; gap: 0.75rem; padding: 0.65rem 0.85rem; background: var(--ink-0); border: 1px solid var(--purple-line); border-radius: var(--r); align-items: center; }
+    .match .res { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 0.8rem; border: 1px solid currentColor; border-radius: var(--r); }
+    .match.win .res { color: var(--win); background: rgba(45,224,140,0.06); }
+    .match.loss .res { color: var(--loss); background: rgba(255,85,119,0.06); }
+    .match.tie .res { color: var(--neutral); background: rgba(124,184,255,0.06); }
+    .match .info { font-family: var(--font-display); font-size: 0.85rem; color: #fff; letter-spacing: 0.04em; text-transform: uppercase; }
+    .match .info .sub { display: block; font-family: var(--font-mono); font-size: 0.66rem; color: var(--fg-mute); letter-spacing: 0.14em; margin-top: 0.1rem; }
+    .match .delta { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--fg-mute); }
+    .match.win .delta { color: var(--win); }
+    .match.loss .delta { color: var(--loss); }
+
+    .commend { padding: 1rem 1.25rem; background: var(--ink-0); border: 1px solid var(--purple-line); border-left: 3px solid var(--gold); border-radius: var(--r); font-size: 0.88rem; color: var(--fg-soft); font-style: italic; }
+    .commend .by { display: block; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-top: 0.5rem; font-style: normal; }
+  </style>
 </head>
 <body>
-
-  <!-- ===== NAVIGATION ===== -->
-  <nav class="navbar">
+  <nav class="nav">
     <div class="container">
       <a href="index.html" class="nav-brand">
-        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
-        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+        <img src="images/logo.png" alt="PPW" />
+        <div><span class="name">Premium Players</span><span class="sub">SQDN · WTPPW · EST 2020</span></div>
       </a>
       <ul class="nav-links" id="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="members.html" class="active">Members</a></li>
-        <li><a href="battles.html">Battles</a></li>
-        <li><a href="elo.html">ELO</a></li>
-        <li><a href="tournaments.html">Tournaments</a></li>
-        <li><a href="recruitment.html">Join Us</a></li>
-        <li><a href="rules.html">Rules</a></li>
-        <li><a href="values.html">Values</a></li>
+        <li><a href="index.html"       data-num="01">Home</a></li>
+        <li><a href="members.html"     data-num="02" class="active">Roster</a></li>
+        <li><a href="elo.html"         data-num="03">ELO</a></li>
+        <li><a href="battles.html"     data-num="04">Battles</a></li>
+        <li><a href="tournaments.html" data-num="05">Tournaments</a></li>
+        <li><a href="recruitment.html" data-num="06">Enlist</a></li>
+        <li><a href="rules.html"       data-num="07">Rules</a></li>
+        <li><a href="values.html"      data-num="08">Values</a></li>
       </ul>
-      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <a href="recruitment.html" class="btn btn-primary btn-sm nav-cta">Enlist <span class="caret"></span></a>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle nav" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <!-- ===== PAGE HERO ===== -->
-  <div class="page-hero">
-    <div class="container">
-      <p class="breadcrumb">
-        <a href="index.html">Home</a>
-        <span>/</span>
-        Members
-      </p>
-      <div class="section-label">Roster</div>
-      <h1>Squadron Members</h1>
-      <p class="text-muted mt-2" style="max-width: 520px;">
-        Meet the pilots, tankers, and sailors that make up PPW. The roster below is
-        pulled live from the Discord bot so the website always reflects the current squadron list.
-      </p>
-    </div>
+  <main class="site">
+    <header class="page-hero">
+      <div class="container">
+        <p class="crumbs"><a href="index.html">Home</a><span class="sep">/</span><span>Roster · Pilot Dossiers</span></p>
+        <div class="eyebrow"><span class="num">02</span><span class="label">Personnel</span></div>
+        <h1 class="mt-2">The Familia</h1>
+        <p class="text-soft mt-2" style="max-width: 580px;">
+          Every pilot, tanker, and sailor with WTPPW colours. Each dossier records service history,
+          theatre specialty, and commendations earned in the line of duty.
+        </p>
+        <div class="spec-strip">
+          <div><span class="k">DOC</span><span class="v">CLASS-OPEN</span></div>
+          <div><span class="k">FILE</span><span class="v">PERSONNEL-001</span></div>
+          <div><span class="k">UPD</span><span class="v" data-clock>--:--:--Z</span></div>
+          <div><span class="k">SRC</span><span class="v">LIVE / DISCORD BOT</span></div>
+        </div>
+      </div>
+    </header>
+
+    <section style="padding-top: 2rem;">
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">02·A</span><span class="label">Command Staff</span></div>
+            <h2 class="mt-2">Squadron Leadership</h2>
+          </div>
+          <div class="right">3 · Officers</div>
+        </div>
+
+        <div class="command-grid">
+          <article class="command-card" data-callsign="Rainbowcastle25">
+            <div class="top">
+              <div class="rank-line">
+                <div class="insignia">★★★</div>
+                <div class="badge-line">OBJ-001 · COMM</div>
+              </div>
+              <div class="role">Commander · Squadron Founder</div>
+              <div class="callsign">Rainbowcastle25</div>
+              <div class="duty">Sets doctrine, runs ops, holds the line since day one.</div>
+            </div>
+            <div class="bottom">
+              <div class="stat-mini"><div class="k">In Service</div><div class="v">5y 8m</div></div>
+              <div class="stat-mini"><div class="k">Theatre</div><div class="v">Air</div></div>
+              <div class="stat-mini"><div class="k">ELO</div><div class="v">1842</div></div>
+            </div>
+          </article>
+
+          <article class="command-card" data-callsign="NeutralBarley33">
+            <div class="top">
+              <div class="rank-line">
+                <div class="insignia">★★</div>
+                <div class="badge-line">OBJ-002 · XO</div>
+              </div>
+              <div class="role">Executive Officer</div>
+              <div class="callsign">NeutralBarley33</div>
+              <div class="duty">Second in command. Event planning, ops scheduling, and morale.</div>
+            </div>
+            <div class="bottom">
+              <div class="stat-mini"><div class="k">In Service</div><div class="v">4y 2m</div></div>
+              <div class="stat-mini"><div class="k">Theatre</div><div class="v">Ground</div></div>
+              <div class="stat-mini"><div class="k">ELO</div><div class="v">1721</div></div>
+            </div>
+          </article>
+
+          <article class="command-card" data-callsign="VolkovIron">
+            <div class="top">
+              <div class="rank-line">
+                <div class="insignia">★★</div>
+                <div class="badge-line">OBJ-003 · RECR</div>
+              </div>
+              <div class="role">Recruitment Officer</div>
+              <div class="callsign">VolkovIron</div>
+              <div class="duty">First contact for every applicant. Vets, interviews, and onboards.</div>
+            </div>
+            <div class="bottom">
+              <div class="stat-mini"><div class="k">In Service</div><div class="v">3y 11m</div></div>
+              <div class="stat-mini"><div class="k">Theatre</div><div class="v">Air</div></div>
+              <div class="stat-mini"><div class="k">ELO</div><div class="v">1688</div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: linear-gradient(180deg, var(--ink-1), var(--ink-0));">
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">02·B</span><span class="label">Personnel Roll</span></div>
+            <h2 class="mt-2">Full Roster</h2>
+          </div>
+          <div class="right">Live from Discord Bot</div>
+        </div>
+
+        <div class="roster-summary">
+          <div class="rs-card">
+            <div class="k">Total Personnel</div>
+            <div class="v" id="rs-total">—</div>
+            <div class="meta" id="rs-total-meta">Active across all theatres</div>
+          </div>
+          <div class="rs-card">
+            <div class="k">Visible</div>
+            <div class="v" id="rs-visible">—</div>
+            <div class="meta">Use filters to narrow</div>
+          </div>
+          <div class="rs-card">
+            <div class="k">Mean Activity</div>
+            <div class="v" id="rs-avg">—</div>
+            <div class="meta">All-time average</div>
+          </div>
+          <div class="rs-card">
+            <div class="k">Top Clan Rating</div>
+            <div class="v" id="rs-top">—</div>
+            <div class="meta" id="rs-top-meta">—</div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="search" id="roster-search" placeholder="Search callsign…" autocomplete="off" />
+          </div>
+          <div class="seg" role="tablist" aria-label="Role">
+            <button data-role="all" class="active">All</button>
+            <button data-role="commander">Cmdr</button>
+            <button data-role="officer">Officer</button>
+            <button data-role="sergeant">Sgt</button>
+            <button data-role="private">Pvt</button>
+          </div>
+          <select id="roster-sort">
+            <option value="rank">Sort · Rank order</option>
+            <option value="name">Sort · Callsign</option>
+            <option value="rating">Sort · Clan rating</option>
+            <option value="activity">Sort · Activity</option>
+            <option value="service">Sort · Service time</option>
+          </select>
+          <div class="seg" id="roster-dir" aria-label="Direction">
+            <button data-dir="desc" class="active">▼ Desc</button>
+            <button data-dir="asc">▲ Asc</button>
+          </div>
+        </div>
+
+        <div class="roster-grid" id="roster-grid">
+          <div class="skel" style="height:200px"></div>
+          <div class="skel" style="height:200px"></div>
+          <div class="skel" style="height:200px"></div>
+        </div>
+
+        <div class="text-center mt-6">
+          <p class="mil"><span class="dot live"></span>SYNCED · LIVE FROM DISCORD BOT · UPD <span data-clock>--:--:--Z</span></p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="name">Premium Players Worldwide</div>
+            <p class="text-soft">A War Thunder squadron and familia since 2020.</p>
+            <div class="mil mt-3"><span class="sep">//</span> SQDN · WTPPW <span class="sep">·</span> EST 2020</div>
+          </div>
+          <div><h4>Navigation</h4><ul><li><a href="index.html">Home</a></li><li><a href="members.html">Roster</a></li><li><a href="elo.html">ELO</a></li><li><a href="battles.html">Battles</a></li></ul></div>
+          <div><h4>Quick Info</h4><ul><li><a href="recruitment.html">Enlist</a></li><li><a href="rules.html">Rules</a></li><li><a href="values.html">Values</a></li></ul></div>
+          <div><h4>Community</h4><ul><li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord</a></li><li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Page</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><span>© 2025 Premium Players Worldwide</span><span>War Thunder · Gaijin Entertainment</span></div>
+      </div>
+    </footer>
+  </main>
+
+  <div class="modal-overlay" id="dossier-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-label="Pilot dossier" id="dossier-content"></div>
   </div>
 
-  <!-- ===== LEADERSHIP ===== -->
-  <section id="officers">
-    <div class="container">
-      <div class="section-label">Leadership</div>
-      <h2 class="section-heading">Command Staff</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        The officers who keep the squadron running, organise events, and handle applications.
-      </p>
-
-      <div class="grid-3">
-        <div class="card" style="text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 0.75rem;">🎖️</div>
-          <h3>Commander</h3>
-          <p class="text-accent" style="font-size:1.1rem; font-family: var(--font-heading); letter-spacing:0.06em;">Rainbowcastle25</p>
-          <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.4rem;">Squadron Founder &amp; Leader</p>
-          <div class="mt-2">
-            <span class="rank-badge rank-commander">Commander</span>
-          </div>
-        </div>
-        <div class="card" style="text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 0.75rem;">⚔️</div>
-          <h3>Executive Officer</h3>
-          <p class="text-muted" style="font-size:1rem; font-family: var(--font-heading); letter-spacing:0.06em;">NeutralBarley33@live</p>
-          <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.4rem;">Executive Officer</p>
-          <div class="mt-2">
-            <span class="rank-badge rank-officer">Officer</span>
-          </div>
-        </div>
-        <div class="card" style="text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 0.75rem;">📢</div>
-          <h3>Recruitment Officer</h3>
-          <p class="text-muted" style="font-size:1rem; font-family: var(--font-heading); letter-spacing:0.06em;">NeutralBarley33@live</p>
-          <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.4rem;">Recruitment Officer</p>
-          <div class="mt-2">
-            <span class="rank-badge rank-officer">Officer</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FULL ROSTER ===== -->
-  <section style="background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
-    <div class="container">
-      <div class="section-label">Full Roster</div>
-      <h2 class="section-heading">All Members</h2>
-      <div class="divider"></div>
-
-      <div class="alert alert-info" style="margin-bottom: 2rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;color:var(--color-accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span>
-          This roster is fetched from the Discord bot. If the bot is offline, the table will show the last error returned by the API.
-        </span>
-      </div>
-
-      <div class="roster-summary-grid">
-        <div class="card roster-summary-card">
-          <div class="roster-summary-label">Total members</div>
-          <div class="roster-summary-value" id="roster-total-members">0</div>
-          <div class="roster-summary-meta" id="roster-total-meta">Waiting for roster data...</div>
-        </div>
-        <div class="card roster-summary-card">
-          <div class="roster-summary-label">Visible members</div>
-          <div class="roster-summary-value" id="roster-visible-members">0</div>
-          <div class="roster-summary-meta" id="roster-visible-meta">Use search and filters to narrow the list.</div>
-        </div>
-        <div class="card roster-summary-card">
-          <div class="roster-summary-label">Average activity</div>
-          <div class="roster-summary-value" id="roster-average-activity">0</div>
-          <div class="roster-summary-meta" id="roster-average-meta">Calculated from the live roster.</div>
-        </div>
-        <div class="card roster-summary-card">
-          <div class="roster-summary-label">Top rating</div>
-          <div class="roster-summary-value" id="roster-top-rating">0</div>
-          <div class="roster-summary-meta" id="roster-top-meta">Highest personal clan rating in the roster.</div>
-        </div>
-      </div>
-
-      <div class="card roster-toolbar" aria-label="Roster controls">
-        <div class="roster-toolbar-field roster-toolbar-search">
-          <label for="roster-search">Search member</label>
-          <input id="roster-search" class="roster-control" type="search" placeholder="Search by player name" autocomplete="off" />
-        </div>
-        <div class="roster-toolbar-field">
-          <label for="roster-role-filter">Role</label>
-          <select id="roster-role-filter" class="roster-control">
-            <option value="all">All roles</option>
-          </select>
-        </div>
-        <div class="roster-toolbar-field">
-          <label for="roster-sort">Sort by</label>
-          <select id="roster-sort" class="roster-control">
-            <option value="rank">Roster position</option>
-            <option value="name">Player name</option>
-            <option value="activity">Activity</option>
-            <option value="personalClanRating">Personal clan rating</option>
-            <option value="role">Role</option>
-            <option value="dateOfEntry">Date of entry</option>
-          </select>
-        </div>
-        <div class="roster-toolbar-field roster-toolbar-direction">
-          <label>Direction</label>
-          <button class="btn btn-outline btn-sm roster-control roster-direction-button" id="roster-sort-direction" type="button" aria-pressed="false">Ascending</button>
-        </div>
-        <div class="roster-toolbar-field roster-toolbar-actions">
-          <label>Actions</label>
-          <div class="roster-toolbar-buttons">
-            <button class="btn btn-outline btn-sm roster-control" id="roster-refresh" type="button">Refresh</button>
-            <button class="btn btn-outline btn-sm roster-control" id="roster-reset" type="button">Reset</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="roster-status card" id="roster-status" aria-live="polite">
-        <div>
-          <div class="roster-status-label">Roster Source</div>
-          <div class="roster-status-value" id="roster-source">Connecting to bot...</div>
-        </div>
-        <div class="roster-status-meta" id="roster-updated">Loading...</div>
-      </div>
-
-      <div class="members-table-wrap">
-        <table class="members-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Player</th>
-              <th>Personal clan rating</th>
-              <th>Activity</th>
-              <th>Role</th>
-              <th>Date of entry</th>
-            </tr>
-          </thead>
-          <tbody id="roster-body">
-            <tr>
-              <td class="text-muted" colspan="6" style="text-align:center; padding: 2rem; color: var(--color-text-muted); font-style: italic;">
-                Loading live roster from the bot...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== RANK GUIDE ===== -->
-  <section>
-    <div class="container">
-      <div class="section-label">Rank System</div>
-      <h2 class="section-heading">Ranks &amp; Progression</h2>
-      <div class="divider"></div>
-      <p class="section-intro">
-        Ranks are awarded based on activity, contribution, and time with the squadron.
-      </p>
-
-      <div class="grid-2">
-        <div class="card" style="display:flex; align-items:flex-start; gap: 1rem;">
-          <div style="flex-shrink:0;">
-            <span class="rank-badge rank-commander" style="font-size:0.85rem; padding: 0.3rem 0.8rem;">Commander</span>
-          </div>
-          <div>
-            <p class="text-muted" style="font-size: 0.88rem; margin:0;">
-              Squadron founder and leader. Sets direction, recruits officers, and manages the squadron in-game.
-            </p>
-          </div>
-        </div>
-        <div class="card" style="display:flex; align-items:flex-start; gap: 1rem;">
-          <div style="flex-shrink:0;">
-            <span class="rank-badge rank-officer" style="font-size:0.85rem; padding: 0.3rem 0.8rem;">Officer</span>
-          </div>
-          <div>
-            <p class="text-muted" style="font-size: 0.88rem; margin:0;">
-              Trusted veterans who help run events, review applications, and represent the squadron in ranked play.
-            </p>
-          </div>
-        </div>
-        <div class="card" style="display:flex; align-items:flex-start; gap: 1rem;">
-          <div style="flex-shrink:0;">
-            <span class="rank-badge rank-sergeant" style="font-size:0.85rem; padding: 0.3rem 0.8rem;">Sergeant</span>
-          </div>
-          <div>
-            <p class="text-muted" style="font-size: 0.88rem; margin:0;">
-              Experienced members who have proven their commitment and are working toward officer status.
-            </p>
-          </div>
-        </div>
-        <div class="card" style="display:flex; align-items:flex-start; gap: 1rem;">
-          <div style="flex-shrink:0;">
-            <span class="rank-badge rank-private" style="font-size:0.85rem; padding: 0.3rem 0.8rem;">Private</span>
-          </div>
-          <div>
-            <p class="text-muted" style="font-size: 0.88rem; margin:0;">
-              New recruits still in the introductory period. Play, contribute, and earn your promotion.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <div class="footer-brand-name">Premium Players Worldwide</div>
-          <p class="footer-brand-desc">
-            A War Thunder squadron dedicated to teamwork, tactical play, and a
-            welcoming community for players of all skill levels.
-          </p>
-        </div>
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="members.html">Members</a></li>
-            <li><a href="recruitment.html">Join Us</a></li>
-            <li><a href="rules.html">Rules</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Quick Info</h4>
-          <ul>
-            <li><a href="recruitment.html#requirements">Requirements</a></li>
-            <li><a href="rules.html#conduct">Code of Conduct</a></li>
-            <li><a href="members.html#officers">Officers</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Community</h4>
-          <ul>
-            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
-            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
-        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    var btn = document.getElementById('nav-toggle');
-    var menu = document.getElementById('nav-links');
-    var rosterStatus = document.getElementById('roster-status');
-    var rosterSource = document.getElementById('roster-source');
-    var rosterUpdated = document.getElementById('roster-updated');
-    var rosterBody = document.getElementById('roster-body') || document.querySelector('.members-table tbody');
-    var rosterApiMeta = document.querySelector('meta[name="ppw-roster-api"]');
-    var rosterApiKeyMeta = document.querySelector('meta[name="ppw-api-key"]');
-    var rosterSearch = document.getElementById('roster-search');
-    var rosterRoleFilter = document.getElementById('roster-role-filter');
-    var rosterSort = document.getElementById('roster-sort');
-    var rosterSortDirection = document.getElementById('roster-sort-direction');
-    var rosterRefresh = document.getElementById('roster-refresh');
-    var rosterReset = document.getElementById('roster-reset');
-    var rosterTotalMembers = document.getElementById('roster-total-members');
-    var rosterTotalMeta = document.getElementById('roster-total-meta');
-    var rosterVisibleMembers = document.getElementById('roster-visible-members');
-    var rosterVisibleMeta = document.getElementById('roster-visible-meta');
-    var rosterAverageActivity = document.getElementById('roster-average-activity');
-    var rosterAverageMeta = document.getElementById('roster-average-meta');
-    var rosterTopRating = document.getElementById('roster-top-rating');
-    var rosterTopMeta = document.getElementById('roster-top-meta');
-    var rosterApiBase = rosterApiMeta ? rosterApiMeta.content.replace(/\/+$/, '') : '';
-    var rosterApiKey = rosterApiKeyMeta ? rosterApiKeyMeta.content.trim() : '';
-    var rosterMembers = [];
-    var rosterState = {
-      query: '',
-      role: 'all',
-      sortField: 'rank',
-      sortDirection: 'asc'
-    };
-    var rolePriority = {
-      Commander: 0,
-      Officer: 1,
-      Sergeant: 2,
-      Private: 3
-    };
-
-    btn.addEventListener('click', function () {
-      var open = menu.classList.toggle('open');
-      btn.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', open);
-    });
-
-    rosterSearch.addEventListener('input', function () {
-      rosterState.query = rosterSearch.value.trim().toLowerCase();
-      renderRosterView();
-    });
-
-    rosterRoleFilter.addEventListener('change', function () {
-      rosterState.role = rosterRoleFilter.value;
-      renderRosterView();
-    });
-
-    rosterSort.addEventListener('change', function () {
-      rosterState.sortField = rosterSort.value;
-      renderRosterView();
-    });
-
-    rosterSortDirection.addEventListener('click', function () {
-      rosterState.sortDirection = rosterState.sortDirection === 'asc' ? 'desc' : 'asc';
-      updateDirectionButton();
-      renderRosterView();
-    });
-
-    rosterRefresh.addEventListener('click', function () {
-      loadRoster();
-    });
-
-    rosterReset.addEventListener('click', function () {
-      rosterState.query = '';
-      rosterState.role = 'all';
-      rosterState.sortField = 'rank';
-      rosterState.sortDirection = 'asc';
-      rosterSearch.value = '';
-      rosterRoleFilter.value = 'all';
-      rosterSort.value = 'rank';
-      updateDirectionButton();
-      renderRosterView();
-    });
-
-    function escapeText(value) {
-      return String(value == null || value === '' ? '—' : value);
-    }
-
-    function parseDateOfEntry(value) {
-      if (!value) {
-        return null;
-      }
-
-      var parts = String(value).split('.');
-      if (parts.length === 3) {
-        var day = parseInt(parts[0], 10);
-        var month = parseInt(parts[1], 10) - 1;
-        var year = parseInt(parts[2], 10);
-        var parsed = new Date(year, month, day);
-        if (!Number.isNaN(parsed.getTime())) {
-          return parsed;
-        }
-      }
-
-      var fallback = new Date(value);
-      return Number.isNaN(fallback.getTime()) ? null : fallback;
-    }
-
-    function formatNumber(value) {
-      return value == null || Number.isNaN(value) ? '—' : Number(value).toLocaleString();
-    }
-
-    function buildRosterApiHeaders(extraHeaders) {
-      var headers = Object.assign({}, extraHeaders || {});
-      if (rosterApiKey) {
-        headers['X-API-Key'] = rosterApiKey;
-      }
-      return headers;
-    }
-
-    function formatAverage(value) {
-      return value == null || Number.isNaN(value) ? '—' : Math.round(value).toLocaleString();
-    }
-
-    function normalizePlayer(player, index) {
-      var name = escapeText(player.name);
-      var role = escapeText(player.role);
-      var joined = parseDateOfEntry(player.dateOfEntry);
-
-      return {
-        sourceIndex: index,
-        rank: player.rank == null ? null : Number(player.rank),
-        name: name,
-        nameLower: name.toLowerCase(),
-        personalClanRating: player.personalClanRating == null ? null : Number(player.personalClanRating),
-        activity: player.activity == null ? null : Number(player.activity),
-        role: role,
-        roleLower: role.toLowerCase(),
-        dateOfEntry: escapeText(player.dateOfEntry),
-        joinedAt: joined,
-        joinedTime: joined ? joined.getTime() : null
-      };
-    }
-
-    function updateDirectionButton() {
-      var isAscending = rosterState.sortDirection === 'asc';
-      rosterSortDirection.textContent = isAscending ? 'Ascending' : 'Descending';
-      rosterSortDirection.setAttribute('aria-pressed', String(!isAscending));
-    }
-
-    function compareValues(left, right, nullsLast) {
-      var leftMissing = left == null || Number.isNaN(left);
-      var rightMissing = right == null || Number.isNaN(right);
-
-      if (leftMissing && rightMissing) {
-        return 0;
-      }
-      if (leftMissing) {
-        return nullsLast ? 1 : -1;
-      }
-      if (rightMissing) {
-        return nullsLast ? -1 : 1;
-      }
-
-      if (left < right) {
-        return -1;
-      }
-      if (left > right) {
-        return 1;
-      }
-      return 0;
-    }
-
-    function compareRole(left, right) {
-      function toTitle(s) {
-        return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
-      }
-      var leftPriority = rolePriority[toTitle(left)] == null ? 99 : rolePriority[toTitle(left)];
-      var rightPriority = rolePriority[toTitle(right)] == null ? 99 : rolePriority[toTitle(right)];
-
-      if (leftPriority < rightPriority) {
-        return -1;
-      }
-      if (leftPriority > rightPriority) {
-        return 1;
-      }
-      return left.localeCompare(right);
-    }
-
-    function sortPlayers(players) {
-      var sorted = players.slice();
-      var direction = rosterState.sortDirection === 'desc' ? -1 : 1;
-
-      sorted.sort(function (left, right) {
-        var result = 0;
-
-        if (rosterState.sortField === 'rank') {
-          result = compareValues(left.rank, right.rank, true) || compareValues(left.sourceIndex, right.sourceIndex, true);
-        } else if (rosterState.sortField === 'name') {
-          result = left.name.localeCompare(right.name) || compareValues(left.sourceIndex, right.sourceIndex, true);
-        } else if (rosterState.sortField === 'activity') {
-          result = compareValues(left.activity, right.activity, false) || left.name.localeCompare(right.name);
-        } else if (rosterState.sortField === 'personalClanRating') {
-          result = compareValues(left.personalClanRating, right.personalClanRating, false) || left.name.localeCompare(right.name);
-        } else if (rosterState.sortField === 'role') {
-          result = compareRole(left.role, right.role) || left.name.localeCompare(right.name);
-        } else if (rosterState.sortField === 'dateOfEntry') {
-          result = compareValues(left.joinedTime, right.joinedTime, true) || left.name.localeCompare(right.name);
-        }
-
-        return result * direction;
-      });
-
-      return sorted;
-    }
-
-    function getRoleBadgeClass(role) {
-      var normalized = String(role || '').toLowerCase();
-
-      if (normalized === 'commander') {
-        return 'rank-commander';
-      }
-      if (normalized === 'officer') {
-        return 'rank-officer';
-      }
-      if (normalized === 'sergeant') {
-        return 'rank-sergeant';
-      }
-      if (normalized === 'private') {
-        return 'rank-private';
-      }
-      return '';
-    }
-
-    function setSummaryStats(allPlayers, visiblePlayers) {
-      var totalCount = allPlayers.length;
-      var visibleCount = visiblePlayers.length;
-      var totalActivity = 0;
-      var activityCount = 0;
-      var topRating = null;
-      var topRatingName = '—';
-
-      allPlayers.forEach(function (player) {
-        if (player.activity != null && !Number.isNaN(player.activity)) {
-          totalActivity += player.activity;
-          activityCount += 1;
-        }
-
-        if (player.personalClanRating != null && !Number.isNaN(player.personalClanRating)) {
-          if (topRating == null || player.personalClanRating > topRating) {
-            topRating = player.personalClanRating;
-            topRatingName = player.name;
-          }
-        }
-      });
-
-      rosterTotalMembers.textContent = String(totalCount);
-      rosterTotalMeta.textContent = totalCount === 1 ? 'One confirmed squadron member.' : 'Confirmed squadron members in the live roster.';
-      rosterVisibleMembers.textContent = String(visibleCount);
-      rosterVisibleMeta.textContent = visibleCount === totalCount ? 'All members are visible.' : 'Filtered by search, role, or sort settings.';
-      rosterAverageActivity.textContent = activityCount ? formatAverage(totalActivity / activityCount) : '—';
-      rosterAverageMeta.textContent = activityCount ? 'Average across members with activity data.' : 'No activity data returned yet.';
-      rosterTopRating.textContent = topRating == null ? '—' : topRating.toLocaleString();
-      rosterTopMeta.textContent = topRating == null ? 'No clan rating data returned.' : 'Top member: ' + topRatingName;
-    }
-
-    function renderEmptyState(message) {
-      rosterBody.innerHTML = '';
-      var row = document.createElement('tr');
-      var cell = document.createElement('td');
-      cell.colSpan = 6;
-      cell.className = 'text-muted';
-      cell.style.textAlign = 'center';
-      cell.style.padding = '2rem';
-      cell.textContent = message;
-      row.appendChild(cell);
-      rosterBody.appendChild(row);
-    }
-
-    function setStatus(text, detail, mode) {
-      rosterSource.textContent = text;
-      rosterUpdated.textContent = detail || '';
-      rosterStatus.setAttribute('data-state', mode || 'idle');
-    }
-
-    function getRatingColor(rating, max) {
-      if (rating == null || max === 0) return null;
-      var pct = rating / max;
-      var stops = [
-        [0.00, 136, 136, 136],
-        [0.35, 224, 224, 224],
-        [0.55,  39, 174,  96],
-        [0.70, 124,  92, 252],
-        [0.85, 155,  59, 242],
-        [1.00, 255, 184,   0]
-      ];
-      for (var i = 1; i < stops.length; i++) {
-        if (pct <= stops[i][0]) {
-          var t = (pct - stops[i-1][0]) / (stops[i][0] - stops[i-1][0]);
-          var r = Math.round(stops[i-1][1] + t * (stops[i][1] - stops[i-1][1]));
-          var g = Math.round(stops[i-1][2] + t * (stops[i][2] - stops[i-1][2]));
-          var b = Math.round(stops[i-1][3] + t * (stops[i][3] - stops[i-1][3]));
-          return 'rgb(' + r + ',' + g + ',' + b + ')';
-        }
-      }
-      return 'rgb(255,184,0)';
-    }
-
-    function renderRoster(players) {
-      rosterBody.innerHTML = '';
-      if (!players.length) {
-        renderEmptyState('No squadron members were returned by the bot.');
-        return;
-      }
-
-      var ranked = players
-        .filter(function(p) { return p.personalClanRating != null; })
-        .slice()
-        .sort(function(a, b) { return b.personalClanRating - a.personalClanRating; });
-      var maxRating = ranked.length ? ranked[0].personalClanRating : 0;
-      var top1Name = ranked[0] ? ranked[0].name : null;
-      var top2Name = ranked[1] ? ranked[1].name : null;
-      var top3Name = ranked[2] ? ranked[2].name : null;
-
-      players.forEach(function (player, index) {
-        var row = document.createElement('tr');
-        var cells = [
-          String(index + 1).padStart(2, '0'),
-          player.name,
-          formatNumber(player.personalClanRating),
-          formatNumber(player.activity),
-          player.role,
-          player.dateOfEntry
-        ];
-
-        cells.forEach(function (value, cellIndex) {
-          var cell = document.createElement('td');
-          if (cellIndex === 0) {
-            cell.className = 'text-muted';
-          }
-          if (cellIndex === 1) {
-            var topClass = '';
-            var topIcon = null;
-            if (player.name === top1Name) {
-              topClass = 'rating-top1';
-              topIcon = '👑';
-            } else if (player.name === top2Name) {
-              topClass = 'rating-top2';
-              topIcon = '🥈';
-            } else if (player.name === top3Name) {
-              topClass = 'rating-top3';
-              topIcon = '🥉';
-            }
-            if (topIcon) {
-              var iconSpan = document.createElement('span');
-              iconSpan.className = 'top-icon';
-              iconSpan.textContent = topIcon;
-              cell.appendChild(iconSpan);
-            }
-            var strong = document.createElement('strong');
-            if (topClass) strong.className = topClass;
-            var nameColor = getRatingColor(player.personalClanRating, maxRating);
-            if (nameColor) strong.style.color = nameColor;
-            strong.textContent = value;
-            cell.appendChild(strong);
-          } else if (cellIndex === 4) {
-            var badge = document.createElement('span');
-            var badgeClass = getRoleBadgeClass(value);
-            badge.className = 'rank-badge' + (badgeClass ? ' ' + badgeClass : '');
-            badge.textContent = value;
-            cell.appendChild(badge);
-          } else {
-            cell.textContent = value;
-          }
-          row.appendChild(cell);
-        });
-
-        row.style.cursor = 'pointer';
-        row.addEventListener('click', function () { openPlayerProfile(player.name); });
-        rosterBody.appendChild(row);
-      });
-    }
-
-    function renderRosterView() {
-      if (!rosterMembers.length) {
-        setSummaryStats([], []);
-        if (!rosterBody.querySelector('td[colspan="6"]')) {
-          renderEmptyState('Loading live roster from the bot...');
-        }
-        rosterUpdated.textContent = 'Loading...';
-        return;
-      }
-
-      var filteredPlayers = rosterMembers.filter(function (player) {
-        var matchesQuery = !rosterState.query || player.nameLower.indexOf(rosterState.query) !== -1;
-        var matchesRole = rosterState.role === 'all' || player.role === rosterState.role;
-        return matchesQuery && matchesRole;
-      });
-
-      var sortedPlayers = sortPlayers(filteredPlayers);
-      var sortLabel = rosterSort.options[rosterSort.selectedIndex] ? rosterSort.options[rosterSort.selectedIndex].text : rosterState.sortField;
-
-      setSummaryStats(rosterMembers, filteredPlayers);
-      renderRoster(sortedPlayers);
-      rosterUpdated.textContent = 'Showing ' + filteredPlayers.length + ' of ' + rosterMembers.length + ' members · Sorted by ' + sortLabel + ' ' + rosterState.sortDirection;
-
-      if (!sortedPlayers.length) {
-        renderEmptyState('No members matched the current search or filters.');
-      }
-    }
-
-    async function loadRoster() {
-      if (!rosterApiBase) {
-        setStatus('No API configured', 'Add the bot API URL to the meta tag in members.html.', 'error');
-        renderEmptyState('Roster API URL is not configured.');
-        return;
-      }
-
-      setStatus('Loading live roster', 'Requesting data from the Discord bot...', 'loading');
-      rosterUpdated.textContent = 'Fetching live roster...';
-
-      var url = new URL('/api/squadron-members', rosterApiBase);
-      url.searchParams.set('name', 'Premium Players Worldwide');
-
-      var controller = new AbortController();
-      var timer = setTimeout(function () { controller.abort(); }, 15000);
-
-      try {
-        var response = await fetch(url.toString(), {
-          mode: 'cors',
-          signal: controller.signal,
-          headers: buildRosterApiHeaders()
-        });
-        var payload = await response.json();
-
-        if (!response.ok || payload.ok === false) {
-          throw new Error(payload.error || ('API request failed with status ' + response.status));
-        }
-
-        rosterMembers = Array.isArray(payload.players) ? payload.players.map(normalizePlayer) : [];
-        setRoleOptions(rosterMembers);
-        renderRosterView();
-        var statusDetail = payload.stale
-          ? 'Live refresh failed — showing cached data from ' + new Date(payload.fetchedAt).toLocaleString() + ' · ' + rosterMembers.length + ' members'
-          : 'Last updated ' + new Date(payload.fetchedAt).toLocaleString() + ' · ' + rosterMembers.length + ' members loaded';
-        setStatus(
-          payload.squadronName || 'Premium Players Worldwide',
-          statusDetail,
-          payload.stale ? 'warn' : 'ready'
-        );
-      } catch (error) {
-        var msg = error.name === 'AbortError'
-          ? 'Request timed out — the bot may be busy or unreachable.'
-          : (error.message && error.message !== 'Failed to fetch'
-              ? error.message
-              : 'Could not reach the roster API — check your connection or try again later.');
-        console.error('Failed to load PPW roster:', error);
-        setStatus('Roster unavailable', msg, 'error');
-        rosterMembers = [];
-        setSummaryStats([], []);
-        renderEmptyState(msg);
-        rosterUpdated.textContent = msg;
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
-    function setRoleOptions(players) {
-      var seen = [];
-
-      players.forEach(function (player) {
-        if (player.role && seen.indexOf(player.role) === -1) {
-          seen.push(player.role);
-        }
-      });
-
-      seen.sort(function (left, right) {
-        var leftPriority = rolePriority[left] == null ? 99 : rolePriority[left];
-        var rightPriority = rolePriority[right] == null ? 99 : rolePriority[right];
-
-        if (leftPriority !== rightPriority) {
-          return leftPriority - rightPriority;
-        }
-
-        return left.localeCompare(right);
-      });
-
-      var currentValue = rosterRoleFilter.value || 'all';
-      rosterRoleFilter.innerHTML = '<option value="all">All roles</option>';
-
-      seen.forEach(function (role) {
-        var option = document.createElement('option');
-        option.value = role;
-        option.textContent = role;
-        rosterRoleFilter.appendChild(option);
-      });
-
-      rosterRoleFilter.value = seen.indexOf(currentValue) !== -1 || currentValue === 'all' ? currentValue : 'all';
-      rosterState.role = rosterRoleFilter.value;
-    }
-
-    updateDirectionButton();
-    renderEmptyState('Loading live roster from the bot...');
-    loadRoster();
-  </script>
-
-  <!-- ===== PLAYER PROFILE MODAL ===== -->
-  <div id="player-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-player-name">
-    <div class="modal-card">
-      <button class="modal-close" id="modal-close-btn" aria-label="Close profile">✕</button>
-      <div id="modal-content"></div>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      var modal = document.getElementById('player-modal');
-      var modalContent = document.getElementById('modal-content');
-      var modalCloseBtn = document.getElementById('modal-close-btn');
-      var modalApiBase = document.querySelector('meta[name="ppw-roster-api"]')
-        ? document.querySelector('meta[name="ppw-roster-api"]').content
-        : '';
-      var modalApiKey = document.querySelector('meta[name="ppw-api-key"]')
-        ? document.querySelector('meta[name="ppw-api-key"]').content
-        : '';
-
-      function closeModal() {
-        modal.classList.remove('modal-open');
-        document.body.style.overflow = '';
-      }
-
-      modalCloseBtn.addEventListener('click', closeModal);
-      modal.addEventListener('click', function (e) {
-        if (e.target === modal) closeModal();
-      });
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeModal();
-      });
-
-      function esc(str) {
-        return String(str || '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
-      }
-
-      function fmt(n) {
-        if (n == null || n === '' || isNaN(Number(n))) return '—';
-        return Number(n).toLocaleString();
-      }
-
-      function getRoleBadgeClassModal(role) {
-        var r = (role || '').toLowerCase();
-        if (r === 'commander') return 'badge-commander';
-        if (r === 'officer') return 'badge-officer';
-        if (r === 'sergeant') return 'badge-sergeant';
-        return 'badge-private';
-      }
-
-      function buildProfileHtml(playerName, rosterPlayer, stats, profile, airEloData, groundEloData) {
-        var role = rosterPlayer ? rosterPlayer.role : '';
-        var joinDate = rosterPlayer ? rosterPlayer.dateOfEntry : '';
-        var clanRating = rosterPlayer ? rosterPlayer.personalClanRating : null;
-        var activity = rosterPlayer ? rosterPlayer.activity : null;
-        var wtRank = profile && profile.rank ? profile.rank : null;
-        var profileUrl = profile && profile.profileUrl ? profile.profileUrl : null;
-        var wtMedals = profile && Array.isArray(profile.medals) ? profile.medals : [];
-
-        var hasStats = stats && stats.ok !== false;
-        var totalGames = hasStats ? (stats.totalGames || 0) : 0;
-        var kdRatio = hasStats ? (stats.kdRatio != null ? stats.kdRatio : '—') : '—';
-        var totalAirKills = hasStats ? (stats.totalAirKills || 0) : 0;
-        var totalGroundKills = hasStats ? (stats.totalGroundKills || 0) : 0;
-        var achievements = hasStats && Array.isArray(stats.achievements) ? stats.achievements : [];
-        var recentMatches = hasStats && Array.isArray(stats.recentMatches) ? stats.recentMatches : [];
-
-        var airEloHist = airEloData && Array.isArray(airEloData.history) ? airEloData.history : [];
-        var groundEloHist = groundEloData && Array.isArray(groundEloData.history) ? groundEloData.history : [];
-        var currentAirElo = airEloHist.length > 0 ? Math.round(airEloHist[airEloHist.length - 1].eloAfter) : null;
-        var currentGroundElo = groundEloHist.length > 0 ? Math.round(groundEloHist[groundEloHist.length - 1].eloAfter) : null;
-
-        var html = '';
-
-        // Header
-        html += '<div class="modal-header">';
-        html += '<div class="modal-header-left">';
-        html += '<h2 id="modal-player-name" class="modal-player-name">' + esc(playerName) + '</h2>';
-        html += '<div class="modal-header-meta">';
-        if (role) {
-          html += '<span class="rank-badge ' + getRoleBadgeClassModal(role) + '">' + esc(role) + '</span>';
-        }
-        if (wtRank) {
-          html += '<span class="modal-wt-rank">⚡ ' + esc(wtRank) + '</span>';
-        }
-        if (joinDate) {
-          html += '<span class="modal-join-date">Joined ' + esc(joinDate) + '</span>';
-        }
-        html += '</div>';
-        html += '</div>';
-        if (profileUrl) {
-          html += '<a class="btn btn-outline modal-wt-link" href="' + esc(profileUrl) + '" target="_blank" rel="noopener">WT Profile</a>';
-        }
-        html += '</div>';
-
-        // Stats row
-        html += '<div class="modal-stats-grid">';
-        html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(totalGames) + '</span><span class="modal-stat-label">Games</span></div>';
-        html += '<div class="modal-stat"><span class="modal-stat-value">' + (kdRatio !== '—' ? kdRatio : '—') + '</span><span class="modal-stat-label">K/D</span></div>';
-        html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(totalAirKills) + '</span><span class="modal-stat-label">Air Kills</span></div>';
-        html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(totalGroundKills) + '</span><span class="modal-stat-label">Ground Kills</span></div>';
-        if (clanRating != null) {
-          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(clanRating) + '</span><span class="modal-stat-label">Clan Rating</span></div>';
-        }
-        if (activity != null) {
-          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(activity) + '</span><span class="modal-stat-label">Activity</span></div>';
-        }
-        if (currentAirElo != null) {
-          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(currentAirElo) + '</span><span class="modal-stat-label">Air ELO</span></div>';
-        }
-        if (currentGroundElo != null) {
-          html += '<div class="modal-stat"><span class="modal-stat-value">' + fmt(currentGroundElo) + '</span><span class="modal-stat-label">Ground ELO</span></div>';
-        }
-        html += '</div>';
-
-        // Achievements
-        if (achievements.length > 0) {
-          html += '<div class="modal-section">';
-          html += '<h3 class="modal-section-title">Achievements</h3>';
-          html += '<div class="achievement-grid">';
-          achievements.forEach(function (a) {
-            html += '<div class="achievement-chip" title="' + esc(a.description) + '">';
-            html += '<span class="achievement-icon">' + esc(a.icon) + '</span>';
-            html += '<span class="achievement-name">' + esc(a.name) + '</span>';
-            if (a.description && a.description.includes('•')) {
-              var label = a.description.split('•').pop().trim();
-              html += '<span class="achievement-season">' + esc(label) + '</span>';
-            }
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '</div>';
-        }
-
-        // War Thunder medals from profile
-        var realMedals = wtMedals.filter(function (m) { return m.icon && m.icon.startsWith('http'); });
-        if (realMedals.length > 0) {
-          html += '<div class="modal-section">';
-          html += '<h3 class="modal-section-title">War Thunder Medals</h3>';
-          html += '<div class="wt-medals-row">';
-          realMedals.forEach(function (m) {
-            html += '<img class="wt-medal-icon" src="' + esc(m.icon) + '" alt="' + esc(m.name || 'Medal') + '" title="' + esc(m.name || '') + '" loading="lazy" />';
-          });
-          html += '</div>';
-          html += '</div>';
-        }
-
-        // Recent matches
-        if (recentMatches.length > 0) {
-          html += '<div class="modal-section">';
-          html += '<h3 class="modal-section-title">Recent Matches</h3>';
-          html += '<div class="modal-matches-wrap">';
-          html += '<table class="modal-matches-table">';
-          html += '<thead><tr><th>Map</th><th>Vehicle</th><th>✈</th><th>💣</th><th>🤝</th><th>☠</th><th>Score</th><th>Result</th></tr></thead>';
-          html += '<tbody>';
-          recentMatches.forEach(function (m) {
-            var resultClass = m.won ? 'match-win' : (m.winnerSide === 'tie' ? 'match-tie' : 'match-loss');
-            var resultLabel = m.won ? 'W' : (m.winnerSide === 'tie' ? 'T' : 'L');
-            var mapShort = (m.mapName || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-            html += '<tr>';
-            html += '<td class="match-map">' + esc(mapShort) + '</td>';
-            html += '<td class="match-vehicle">' + esc(m.vehicle || '—') + '</td>';
-            html += '<td>' + fmt(m.airKills) + '</td>';
-            html += '<td>' + fmt(m.groundKills) + '</td>';
-            html += '<td>' + fmt(m.assists) + '</td>';
-            html += '<td>' + fmt(m.deaths) + '</td>';
-            html += '<td>' + fmt(m.score) + '</td>';
-            html += '<td><span class="match-result ' + resultClass + '">' + resultLabel + '</span></td>';
-            html += '</tr>';
-          });
-          html += '</tbody></table>';
-          html += '</div>';
-          html += '</div>';
-        }
-
-        if (!hasStats && totalGames === 0 && achievements.length === 0 && recentMatches.length === 0) {
-          html += '<p class="modal-no-data">No replay data found for this player yet.</p>';
-        }
-
-        return html;
-      }
-
-      window.openPlayerProfile = function (playerName) {
-        modal.classList.add('modal-open');
-        document.body.style.overflow = 'hidden';
-
-        // Find from current roster state
-        var rosterPlayer = null;
-        if (typeof rosterMembers !== 'undefined') {
-          rosterPlayer = rosterMembers.find(function (p) {
-            return p.name === playerName;
-          }) || null;
-        }
-
-        modalContent.innerHTML = '<div class="modal-loading"><span class="modal-spinner"></span>Loading profile…</div>';
-
-        if (!modalApiBase) {
-          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, null, null, null, null);
-          return;
-        }
-
-        var statsUrl = new URL('/api/player-stats/' + encodeURIComponent(playerName), modalApiBase).toString();
-        var profileUrl = new URL('/api/member/' + encodeURIComponent(playerName), modalApiBase).toString();
-        var airEloUrl = new URL('/api/elo-history?role=air&limit=100&player=' + encodeURIComponent(playerName), modalApiBase).toString();
-        var groundEloUrl = new URL('/api/elo-history?role=ground&limit=100&player=' + encodeURIComponent(playerName), modalApiBase).toString();
-        var headers = { 'X-API-Key': modalApiKey };
-
-        Promise.all([
-          fetch(statsUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; }),
-          fetch(profileUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; }),
-          fetch(airEloUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; }),
-          fetch(groundEloUrl, { mode: 'cors', headers: headers }).then(function (r) { return r.json(); }).catch(function () { return null; })
-        ]).then(function (results) {
-          var stats = results[0];
-          var profile = results[1];
-          var airElo = results[2];
-          var groundElo = results[3];
-          modalContent.innerHTML = buildProfileHtml(playerName, rosterPlayer, stats, profile, airElo, groundElo);
-        });
-      };
-    })();
-  </script>
+  <script src="app.js"></script>
+  <script src="members.js"></script>
 </body>
 </html>

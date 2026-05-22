@@ -3,366 +3,287 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tournaments — Premium Players Worldwide</title>
-  <meta name="description" content="Premium Players Worldwide tournament results and winner recognition." />
-  <meta name="theme-color" content="#000000" />
-  <link rel="icon" href="images/logo.svg" type="image/svg+xml" />
+  <title>Tournaments — PPW Squadron</title>
+  <meta name="theme-color" content="#07060A" />
+  <meta name="ppw-api-base" content="https://ppw-api.ensignenterprises.com" />
+  <meta name="ppw-api-key" content="72b2854e8e1d3ff73d92992858556b13983392c4e9f0d4d981865be66ccab46f" />
+  <link rel="icon" href="images/logo.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    .tournament-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 3rem;
-      margin-bottom: 3rem;
-    }
+    .trophy-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    @media (max-width: 800px) { .trophy-grid { grid-template-columns: 1fr; } }
 
-    .tournament-card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 0;
+    .trophy {
+      position: relative;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(255,184,0,0.12), transparent 50%),
+        radial-gradient(circle at 10% 100%, rgba(139,43,226,0.18), transparent 50%),
+        var(--ink-1);
+      border: 1px solid var(--purple-line-2);
+      border-radius: var(--r);
       overflow: hidden;
-      transition: all 0.3s;
-      display: flex;
-      flex-direction: column;
+      transition: all var(--t);
     }
+    .trophy:hover { border-color: var(--gold); box-shadow: 0 0 36px -14px var(--gold-glow); transform: translateY(-2px); }
+    .trophy::before { content: ""; position: absolute; top: 0; left: 0; width: 80px; height: 2px; background: var(--gold); }
+    .trophy::after { content: ""; position: absolute; bottom: 0; right: 0; width: 80px; height: 2px; background: var(--purple-2); }
 
-    .tournament-card:hover {
-      border-color: var(--color-accent);
-      box-shadow: 0 8px 32px rgba(255, 184, 0, 0.15);
-      transform: translateY(-4px);
+    .trophy-head { padding: 2rem 2rem 1.5rem; border-bottom: 1px solid var(--purple-line); position: relative; }
+    .trophy-tag { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+    .trophy-tag::before { content: ""; width: 22px; height: 1px; background: var(--gold); }
+    .trophy-name { font-family: var(--font-display); font-size: clamp(1.6rem, 2.6vw, 2.1rem); letter-spacing: 0.05em; color: #fff; text-transform: uppercase; line-height: 1; margin-bottom: 0.5rem; }
+    .trophy-meta { display: flex; gap: 1.25rem; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-mute); margin-top: 0.5rem; }
+    .trophy-meta .sep { color: var(--purple-2); }
+    .trophy-meta .v { color: var(--fg); }
+
+    .trophy-emblem {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      width: 56px; height: 56px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1.6rem; color: var(--gold);
+      border: 1.5px solid var(--gold); border-radius: var(--r);
+      background: rgba(255,184,0,0.06); letter-spacing: 0;
     }
+    .trophy-emblem::before, .trophy-emblem::after { content: ""; position: absolute; width: 10px; height: 10px; }
+    .trophy-emblem::before { top: -1px; left: -1px; border-top: 1.5px solid var(--gold); border-left: 1.5px solid var(--gold); }
+    .trophy-emblem::after { bottom: -1px; right: -1px; border-bottom: 1.5px solid var(--gold); border-right: 1.5px solid var(--gold); }
 
-    .tournament-header {
-      background: linear-gradient(135deg, rgba(255, 184, 0, 0.15) 0%, rgba(139, 43, 226, 0.1) 100%);
-      border-bottom: 2px solid var(--color-accent);
-      padding: 2rem 1.5rem;
+    .champions { padding: 1.75rem 2rem 2rem; }
+    .champions .label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-mute); margin-bottom: 1rem; display: flex; justify-content: space-between; }
+    .champions .label .right { color: var(--gold); }
+    .champions ol { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; counter-reset: champ; }
+    .champions ol li {
+      counter-increment: champ;
+      display: grid; grid-template-columns: 36px 1fr auto;
+      gap: 1rem; align-items: center;
+      padding: 0.65rem 0.85rem;
+      background: var(--ink-0); border: 1px solid var(--purple-line); border-radius: var(--r);
+      transition: all var(--t);
+    }
+    .champions ol li:hover { border-color: var(--gold-line); background: rgba(255,184,0,0.03); }
+    .champions ol li::before { content: "★"; font-family: var(--font-display); font-size: 1.1rem; color: var(--gold); text-align: center; }
+    .champions ol li .name { font-family: var(--font-display); font-size: 1.05rem; letter-spacing: 0.04em; color: #fff; text-transform: uppercase; line-height: 1; }
+    .champions ol li .role { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.16em; color: var(--fg-mute); text-transform: uppercase; }
+
+    .upcoming-empty {
+      padding: 2.5rem 2rem;
+      background: repeating-linear-gradient(135deg, rgba(139,43,226,0.04) 0 1px, transparent 1px 24px), var(--ink-1);
+      border: 1px dashed var(--purple-line-2);
+      border-radius: var(--r);
       text-align: center;
     }
+    .upcoming-empty .icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.2rem; color: var(--gold); border: 1px solid var(--gold-line); border-radius: var(--r); background: rgba(255,184,0,0.04); margin-bottom: 1rem; }
+    .upcoming-empty h3 { margin-bottom: 0.5rem; font-size: 1.05rem; }
+    .upcoming-empty p { max-width: 480px; margin: 0 auto; }
 
-    .tournament-format {
-      font-family: var(--font-heading);
-      font-size: 0.75rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--color-accent);
-      margin-bottom: 0.5rem;
-    }
-
-    .tournament-title {
-      font-family: var(--font-heading);
-      font-size: 1.5rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--color-heading);
-      margin: 0;
-      line-height: 1.1;
-    }
-
-    .podium-container {
-      padding: 2.5rem 1.5rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .podium {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1rem;
-      align-items: flex-end;
-      margin-bottom: 2rem;
-    }
-
-    .podium-position {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .podium-rank {
-      font-family: var(--font-heading);
-      font-size: 3.5rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      line-height: 1;
-    }
-
-    .podium-position.rank-1 .podium-rank { color: #FFD700; }
-    .podium-position.rank-2 .podium-rank { color: #C0C0C0; }
-    .podium-position.rank-3 .podium-rank { color: #CD7F32; }
-
-    .podium-pedestal {
-      width: 100%;
-      border-radius: 4px 4px 0 0;
-      padding: 0.5rem;
-      margin-bottom: 0.75rem;
-      font-weight: 600;
-      font-size: 0.85rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: white;
-    }
-
-    .rank-1 .podium-pedestal {
-      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-      height: 100px;
-    }
-
-    .rank-2 .podium-pedestal {
-      background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%);
-      height: 70px;
-    }
-
-    .rank-3 .podium-pedestal {
-      background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%);
-      height: 50px;
-    }
-
-    .podium-medal {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .winner-name {
-      font-family: var(--font-heading);
-      font-size: 0.95rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--color-text);
-      font-weight: 600;
-      word-break: break-word;
-    }
-
-    .runner-up-list {
-      background: var(--color-bg);
-      border-radius: 4px;
-      padding: 1.5rem;
-    }
-
-    .runner-up-label {
-      font-size: 0.8rem;
-      color: var(--color-text-muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 0.75rem;
-      display: block;
-    }
-
-    .runner-up-item {
-      display: flex;
-      align-items: center;
-      padding: 0.5rem 0;
-      color: var(--color-text);
-      font-size: 0.95rem;
-    }
-
-    .runner-up-item::before {
-      content: '⭐';
-      margin-right: 0.75rem;
-      color: var(--color-accent);
-    }
-
-    .hall-of-fame-section {
-      text-align: center;
-      padding: 3rem 0;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      margin-bottom: 3rem;
-    }
-
-    .hall-of-fame-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    .hall-of-fame-text {
-      color: var(--color-text-muted);
-      font-size: 1.05rem;
-    }
-
-    @media (max-width: 768px) {
-      .tournament-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-      }
-
-      .podium {
-        gap: 0.75rem;
-      }
-
-      .podium-rank {
-        font-size: 2.5rem;
-      }
-
-      .podium-medal {
-        font-size: 2rem;
-      }
-
-      .winner-name {
-        font-size: 0.85rem;
-      }
-    }
+    .top20-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .top20 { display: grid; grid-template-columns: 36px 1fr auto; gap: 0.75rem; padding: 0.65rem 0.85rem; background: var(--ink-1); border: 1px solid var(--purple-line); border-radius: var(--r); align-items: center; }
+    .top20 .rank { font-family: var(--font-mono); font-size: 0.72rem; color: var(--fg-mute); letter-spacing: 0.14em; }
+    .top20 .nm { font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 0.04em; color: #fff; text-transform: uppercase; }
+    .top20 .pts { font-family: var(--font-display); font-size: 1rem; color: var(--gold); letter-spacing: 0.04em; }
+    .top20.gold { border-color: var(--gold-line); }
+    .top20.gold .rank { color: var(--gold); }
+    @media (max-width: 700px) { .top20-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
-  <!-- ===== NAVIGATION ===== -->
-  <nav class="navbar">
+  <nav class="nav">
     <div class="container">
       <a href="index.html" class="nav-brand">
-        <img src="images/logo.svg" alt="PPW Logo" class="nav-logo" />
-        <span class="nav-brand-text">PPW <span class="nav-brand-sub">Squadron</span></span>
+        <img src="images/logo.png" alt="PPW" />
+        <div><span class="name">Premium Players</span><span class="sub">SQDN · WTPPW · EST 2020</span></div>
       </a>
       <ul class="nav-links" id="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="members.html">Members</a></li>
-        <li><a href="battles.html">Battles</a></li>
-        <li><a href="elo.html">ELO</a></li>
-        <li><a href="tournaments.html" class="active">Tournaments</a></li>
-        <li><a href="recruitment.html">Join Us</a></li>
-        <li><a href="rules.html">Rules</a></li>
-        <li><a href="values.html">Values</a></li>
+        <li><a href="index.html"       data-num="01">Home</a></li>
+        <li><a href="members.html"     data-num="02">Roster</a></li>
+        <li><a href="elo.html"         data-num="03">ELO</a></li>
+        <li><a href="battles.html"     data-num="04">Battles</a></li>
+        <li><a href="tournaments.html" data-num="05" class="active">Tournaments</a></li>
+        <li><a href="recruitment.html" data-num="06">Enlist</a></li>
+        <li><a href="rules.html"       data-num="07">Rules</a></li>
+        <li><a href="values.html"      data-num="08">Values</a></li>
       </ul>
-      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <a href="recruitment.html" class="btn btn-primary btn-sm nav-cta">Enlist <span class="caret"></span></a>
+      <button class="nav-hamburger" id="nav-toggle" aria-label="Toggle nav" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <!-- ===== PAGE HERO ===== -->
-  <div class="page-hero">
-    <div class="container">
-      <p class="breadcrumb">
-        <a href="index.html">Home</a>
-        <span>/</span>
-        Tournaments
-      </p>
-      <div class="section-label">Hall of Fame</div>
-      <h1>Tournament Results</h1>
-      <p class="text-muted mt-2" style="max-width: 540px;">
-        Celebrating PPW's competitive winners across all formats — ground, air, and beyond.
-        Check Discord for upcoming tournament announcements.
-      </p>
-    </div>
-  </div>
-
-  <!-- ===== TOURNAMENTS ===== -->
-  <section style="padding: 4rem 0;">
-    <div class="container">
-      <p class="section-intro" style="text-align: center; max-width: 600px; margin: 0 auto 4rem;">
-        Our competitive tournaments bring together the best pilots, tankers, and sailors in the squadron.
-        See who's earned their place at the top.
-      </p>
-
-      <div class="tournament-grid">
-        <!-- Tournament 1: Ground Top Tier 3v3 -->
-        <div class="tournament-card">
-          <div class="tournament-header">
-            <div class="tournament-format">Competitive 3v3 Battle</div>
-            <h2 class="tournament-title">Ground Top Tier</h2>
-          </div>
-          <div class="podium-container">
-            <div class="runner-up-list">
-              <span class="runner-up-label">Champions</span>
-              <div class="runner-up-item">TechnoPip</div>
-              <div class="runner-up-item">Sjofreiy</div>
-              <div class="runner-up-item">Canton Ripfist</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tournament 2: Air Top Tier 2v2 -->
-        <div class="tournament-card">
-          <div class="tournament-header">
-            <div class="tournament-format">Competitive 2v2 Battle</div>
-            <h2 class="tournament-title">Air Top Tier</h2>
-          </div>
-          <div class="podium-container">
-            <div class="runner-up-list">
-              <span class="runner-up-label">Champions</span>
-              <div class="runner-up-item">Vert</div>
-              <div class="runner-up-item">SlytHer</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== COMING SOON ===== -->
-  <section style="padding: 4rem 0;">
-    <div class="container">
-      <div class="hall-of-fame-section">
-        <div class="hall-of-fame-icon">🏆</div>
-        <h2 style="margin-bottom: 1rem;">More Tournaments Coming</h2>
-        <p class="hall-of-fame-text">
-          We're planning additional tournaments across all branches and battle ratings.
-          Check our Discord for announcements and registration details.
+  <main class="site">
+    <header class="page-hero">
+      <div class="container">
+        <p class="crumbs"><a href="index.html">Home</a><span class="sep">/</span><span>Tournaments &amp; Hall of Fame</span></p>
+        <div class="eyebrow"><span class="num">05</span><span class="label">Champions Archive</span></div>
+        <h1 class="mt-2">Tournaments &amp; Hall of Fame</h1>
+        <p class="text-soft mt-2" style="max-width: 600px;">
+          Trophy room for the pilots who actually won. Internal squadron tournaments,
+          seasonal SRE leaderboards, and whatever silverware the familia has earned.
         </p>
+        <div class="spec-strip">
+          <div><span class="k">DOC</span><span class="v">TRN-HOF-001</span></div>
+          <div><span class="k">EVENTS</span><span class="v">TWO RECORDED</span></div>
+          <div><span class="k">UPD</span><span class="v" data-clock>--:--:--Z</span></div>
+          <div><span class="k">NEXT</span><span class="v">UNSCHEDULED</span></div>
+        </div>
       </div>
-    </div>
-  </section>
+    </header>
 
-  <!-- ===== FOOTER ===== -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <div class="footer-brand-name">Premium Players Worldwide</div>
-          <p class="footer-brand-desc">
-            A War Thunder squadron dedicated to teamwork, tactical play, and a
-            welcoming community for players of all skill levels.
+    <section style="padding-top: 1rem;">
+      <div class="container">
+        <div class="s-head">
+          <div>
+            <div class="eyebrow"><span class="num">05·A</span><span class="label">Hall of Fame</span></div>
+            <h2 class="mt-2">Tournament Champions</h2>
+          </div>
+          <div class="right">Internal · Archive</div>
+        </div>
+
+        <div class="trophy-grid">
+          <article class="trophy">
+            <div class="trophy-head">
+              <div class="trophy-emblem">★</div>
+              <div class="trophy-tag">Competitive 3v3 · Ground</div>
+              <h2 class="trophy-name">Ground Top Tier</h2>
+              <div class="trophy-meta">
+                <span>FORMAT<span class="sep"> / </span><span class="v">3 v 3</span></span>
+                <span>THEATRE<span class="sep"> / </span><span class="v">Ground RB · Top Tier</span></span>
+              </div>
+            </div>
+            <div class="champions">
+              <div class="label"><span>// Champions</span><span class="right">Squad of 3</span></div>
+              <ol>
+                <li><span class="name">TechnoPip</span><span class="role">Champion</span></li>
+                <li><span class="name">Sjofreiy</span><span class="role">Champion</span></li>
+                <li><span class="name">Canton Ripfist</span><span class="role">Champion</span></li>
+              </ol>
+            </div>
+          </article>
+
+          <article class="trophy">
+            <div class="trophy-head">
+              <div class="trophy-emblem">★</div>
+              <div class="trophy-tag">Competitive 2v2 · Air</div>
+              <h2 class="trophy-name">Air Top Tier</h2>
+              <div class="trophy-meta">
+                <span>FORMAT<span class="sep"> / </span><span class="v">2 v 2</span></span>
+                <span>THEATRE<span class="sep"> / </span><span class="v">Air RB · Top Tier</span></span>
+              </div>
+            </div>
+            <div class="champions">
+              <div class="label"><span>// Champions</span><span class="right">Duo</span></div>
+              <ol>
+                <li><span class="name">Vert</span><span class="role">Champion</span></li>
+                <li><span class="name">SlytHer</span><span class="role">Champion</span></li>
+              </ol>
+            </div>
+          </article>
+        </div>
+
+        <div class="s-head mt-6">
+          <div>
+            <div class="eyebrow"><span class="num">05·B</span><span class="label">Upcoming Events</span></div>
+            <h2 class="mt-2">Next Tournament</h2>
+          </div>
+          <div class="right">No Event Scheduled</div>
+        </div>
+
+        <div class="upcoming-empty">
+          <div class="icon">—</div>
+          <h3>No tournament scheduled right now</h3>
+          <p class="text-soft">
+            We're not running anything this cycle. When the next bracket goes up, the briefing
+            and sign-ups will be posted in <strong>#tournaments</strong> on Discord — and this slot
+            will fill in with the format, date, and roster.
           </p>
+          <div class="hero-actions" style="display:flex;gap:0.75rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
+            <a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer" class="btn btn-purple">Watch Discord <span class="caret"></span></a>
+          </div>
         </div>
-        <div class="footer-col">
-          <h4>Navigation</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="members.html">Members</a></li>
-            <li><a href="tournaments.html">Tournaments</a></li>
-            <li><a href="recruitment.html">Join Us</a></li>
-            <li><a href="rules.html">Rules</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Quick Info</h4>
-          <ul>
-            <li><a href="recruitment.html#requirements">Requirements</a></li>
-            <li><a href="rules.html#conduct">Code of Conduct</a></li>
-            <li><a href="members.html#officers">Officers</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h4>Community</h4>
-          <ul>
-            <li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord Server</a></li>
-            <li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Clan Page</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2025 Premium Players Worldwide. All rights reserved.</span>
-        <span>War Thunder is a trademark of Gaijin Entertainment.</span>
-      </div>
-    </div>
-  </footer>
 
+        <div class="s-head mt-6">
+          <div>
+            <div class="eyebrow"><span class="num">05·C</span><span class="label">SRE Top 20 · Current Season</span></div>
+            <h2 class="mt-2">Seasonal Leaderboard</h2>
+          </div>
+          <div class="right" id="top20-status">Loading…</div>
+        </div>
+
+        <div class="top20-grid" id="top20-grid">
+          <div class="skel" style="height:48px"></div>
+          <div class="skel" style="height:48px"></div>
+          <div class="skel" style="height:48px"></div>
+          <div class="skel" style="height:48px"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="name">Premium Players Worldwide</div>
+            <p class="text-soft">A War Thunder squadron and familia since 2020.</p>
+            <div class="mil mt-3"><span class="sep">//</span> SQDN · WTPPW <span class="sep">·</span> EST 2020</div>
+          </div>
+          <div><h4>Navigation</h4><ul><li><a href="index.html">Home</a></li><li><a href="members.html">Roster</a></li><li><a href="elo.html">ELO</a></li><li><a href="battles.html">Battles</a></li></ul></div>
+          <div><h4>Quick Info</h4><ul><li><a href="recruitment.html">Enlist</a></li><li><a href="rules.html">Rules</a></li><li><a href="values.html">Values</a></li></ul></div>
+          <div><h4>Community</h4><ul><li><a href="https://discord.gg/fk37SddZJg" target="_blank" rel="noopener noreferrer">Discord</a></li><li><a href="https://warthunder.com/en/community/claninfo/Premium%20Players%20Worldwide" target="_blank" rel="noopener noreferrer">War Thunder Page</a></li></ul></div>
+        </div>
+        <div class="footer-bottom"><span>© 2025 Premium Players Worldwide</span><span>War Thunder · Gaijin Entertainment</span></div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
   <script>
-    var btn = document.getElementById('nav-toggle');
-    var menu = document.getElementById('nav-links');
-    btn.addEventListener('click', function () {
-      var open = menu.classList.toggle('open');
-      btn.classList.toggle('open', open);
-      btn.setAttribute('aria-expanded', String(open));
-    });
-  </script>
+  (function () {
+    var apiBase = document.querySelector('meta[name="ppw-api-base"]').content;
+    var apiKey  = document.querySelector('meta[name="ppw-api-key"]').content;
 
+    var grid   = document.getElementById("top20-grid");
+    var status = document.getElementById("top20-status");
+
+    var rankPrefixes = ["★ 01", "▲ 02", "● 03"];
+
+    function renderTop20(players) {
+      if (!players || !players.length) {
+        grid.innerHTML = '<p class="text-soft" style="grid-column:1/-1;font-family:var(--font-mono);font-size:0.8rem;padding:1rem 0;">No data available yet.</p>';
+        status.textContent = "No Data";
+        return;
+      }
+      status.textContent = "Live · Season";
+      grid.innerHTML = players.map(function (p, i) {
+        var rank   = i + 1;
+        var isGold = rank <= 3;
+        var prefix = rank <= 3 ? rankPrefixes[i] : "#" + String(rank).padStart(2, "0");
+        var pts    = p.points != null ? PPW.formatNum(p.points) + " PTS" : (p.score != null ? PPW.formatNum(p.score) + " PTS" : "—");
+        var name   = p.player_name || p.name || "Unknown";
+        return [
+          '<div class="top20', isGold ? " gold" : "", '">',
+            '<span class="rank">', prefix, '</span>',
+            '<span class="nm">', name, '</span>',
+            '<span class="pts">', pts, '</span>',
+          '</div>'
+        ].join("");
+      }).join("");
+    }
+
+    fetch(apiBase + "/api/top-20-leaderboard", {
+      headers: { "X-API-Key": apiKey }
+    })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (data) {
+        var players = data.top20 || data.players || data.leaderboard || data || [];
+        if (!Array.isArray(players) || !players.length) throw new Error("empty");
+        renderTop20(players);
+      })
+      .catch(function (err) {
+        console.error("[Top20]", err);
+        renderTop20([]);
+      });
+  })();
+  </script>
 </body>
 </html>

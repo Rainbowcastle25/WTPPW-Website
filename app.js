@@ -285,3 +285,14 @@ PPW.callsign = function (name) {
   return name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
 };
 
+PPW.MEDALS = [
+  { icon: "V",  name: "Long Service",    desc: "4+ years of active service in PPW.",                tier: "gold"   },
+  { icon: "✈",  name: "Aviator",         desc: "Primary theatre: air operations.",                  tier: "gold"   },
+  { icon: "⚡",  name: "High Activity",   desc: "Consistently above 80% activity score.",            tier: "purple" },
+  { icon: "★",  name: "Veteran",         desc: "5+ years of dedicated service.",                    tier: "gold"   },
+  { icon: "◆",  name: "All-Rounder",     desc: "Versatile contributor across multiple theatres.",   tier: "purple" },
+  { icon: "⬡",  name: "Command Staff",   desc: "Serves in squadron command or officer role.",       tier: "gold"   },
+  { icon: "»",  name: "NCO",             desc: "Non-commissioned officer or sergeant grade.",       tier: "purple" },
+  { icon: "⚓",  name: "Naval",           desc: "Primary theatre: naval operations.",               tier: "purple" }
+];
+

@@ -204,7 +204,7 @@
 
         <div class="s-head mt-6">
           <div>
-            <div class="eyebrow"><span class="num">05·C</span><span class="label">SRE Top 20 · Current Season</span></div>
+            <div class="eyebrow"><span class="num">05·C</span><span class="label">Squadron Battles · Clan Rating</span></div>
             <h2 class="mt-2">Seasonal Leaderboard</h2>
           </div>
           <div class="right" id="top20-status">Loading…</div>
@@ -253,13 +253,14 @@
         status.textContent = "No Data";
         return;
       }
-      status.textContent = "Live · Season";
+      status.textContent = "Live · " + players.length + " members";
       grid.innerHTML = players.map(function (p, i) {
         var rank   = i + 1;
         var isGold = rank <= 3;
         var prefix = rank <= 3 ? rankPrefixes[i] : "#" + String(rank).padStart(2, "0");
-        var pts    = p.points != null ? PPW.formatNum(p.points) + " PTS" : (p.score != null ? PPW.formatNum(p.score) + " PTS" : "—");
-        var name   = p.player_name || p.name || "Unknown";
+        var rating = p.personalClanRating || p.clanRating || p.personal_clan_rating || 0;
+        var pts    = PPW.formatNum(rating);
+        var name   = p.name || p.player_name || "Unknown";
         return [
           '<div class="top20', isGold ? " gold" : "", '">',
             '<span class="rank">', prefix, '</span>',
@@ -270,14 +271,20 @@
       }).join("");
     }
 
-    fetch(apiBase + "/api/top-20-leaderboard", {
+    fetch(apiBase + "/api/squadron-members", {
       headers: { "X-API-Key": apiKey }
     })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (data) {
-        var players = data.top20 || data.players || data.leaderboard || data || [];
-        if (!Array.isArray(players) || !players.length) throw new Error("empty");
-        renderTop20(players);
+        var raw = data.players || data.members || data || [];
+        if (!Array.isArray(raw) || !raw.length) throw new Error("empty");
+        // Sort by personal clan rating descending, take top 20
+        var sorted = raw.slice().sort(function (a, b) {
+          var ra = a.personalClanRating || a.clanRating || a.personal_clan_rating || 0;
+          var rb = b.personalClanRating || b.clanRating || b.personal_clan_rating || 0;
+          return rb - ra;
+        });
+        renderTop20(sorted.slice(0, 20));
       })
       .catch(function (err) {
         console.error("[Top20]", err);

@@ -310,18 +310,13 @@
 
   function computeTheatreBreakdown(m) {
     var s = (m.specialty || "").toLowerCase();
-    var base = { air: 25, ground: 25, naval: 25 };
-    if (s.indexOf("air") === 0) base.air = 65 + (m.activity % 20);
-    else if (s.indexOf("ground") === 0) base.ground = 65 + (m.activity % 20);
-    else if (s.indexOf("naval") === 0) base.naval = 70 + (m.activity % 15);
-    var keys = ["air", "ground", "naval"];
-    var maxK = keys.find(function (k) { return base[k] === Math.max(base.air, base.ground, base.naval); });
-    var others = 100 - Math.max(base.air, base.ground, base.naval);
-    keys.forEach(function (k) { if (k !== maxK) base[k] = Math.round(others / 2); });
+    var airVal = s.indexOf("ground") === 0
+      ? 100 - (65 + (m.activity % 20))
+      : 65 + (m.activity % 20);
+    var groundVal = 100 - airVal;
     return [
-      { key: "air",    label: "Air Theatre",    value: base.air },
-      { key: "ground", label: "Ground Theatre", value: base.ground },
-      { key: "naval",  label: "Naval Theatre",  value: base.naval }
+      { key: "air",    label: "Air Theatre",    value: airVal },
+      { key: "ground", label: "Ground Theatre", value: groundVal }
     ];
   }
 

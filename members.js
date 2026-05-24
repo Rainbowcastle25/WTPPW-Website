@@ -203,17 +203,19 @@
       var airLb       = results[1];
       var groundLb    = results[2];
 
-      // Build ELO lookup: name (normalised lower) → { air, ground }
+      // Build ELO lookup: name (normalised lower) → { air, airWins, ground, groundWins }
       var toPlayers = function (lb) { return (lb && (lb.players || lb.data || lb)) || []; };
       toPlayers(airLb).forEach(function (p) {
         var key = (p.player_name || "").toLowerCase();
-        if (!eloData[key]) eloData[key] = { air: 0, ground: 0 };
-        eloData[key].air = p.matches_played || 0;
+        if (!eloData[key]) eloData[key] = { air: 0, airWins: 0, ground: 0, groundWins: 0 };
+        eloData[key].air     = p.matches_played || 0;
+        eloData[key].airWins = p.wins           || 0;
       });
       toPlayers(groundLb).forEach(function (p) {
         var key = (p.player_name || "").toLowerCase();
-        if (!eloData[key]) eloData[key] = { air: 0, ground: 0 };
-        eloData[key].ground = p.matches_played || 0;
+        if (!eloData[key]) eloData[key] = { air: 0, airWins: 0, ground: 0, groundWins: 0 };
+        eloData[key].ground     = p.matches_played || 0;
+        eloData[key].groundWins = p.wins           || 0;
       });
 
       var raw = membersData.players || membersData.members || membersData || [];
@@ -358,10 +360,19 @@
   }
 
   function renderDossier(m, medalsLoading) {
-    var psn     = String(m.idx + 1).padStart(3, "0");
-    var winRate = Math.round(m.activity * 0.85 + Math.random() * 5);
-    var winRate2 = m.activity > 60 ? winRate : winRate - 6;
-    var rateClamp = Math.max(40, Math.min(82, winRate2));
+    var psn = String(m.idx + 1).padStart(3, "0");
+
+    // Real win rate from ELO data
+    var elo          = eloData[m.name.toLowerCase()];
+    var totalMatches = elo ? (elo.air + elo.ground)           : 0;
+    var totalWins    = elo ? (elo.airWins + elo.groundWins)   : 0;
+    var winRateHtml  = totalMatches > 0
+      ? Math.round((totalWins / totalMatches) * 100) + '%'
+      : '—';
+    var winRateMeta  = totalMatches > 0
+      ? totalWins + 'W · ' + (totalMatches - totalWins) + 'L · ' + totalMatches + ' battles'
+      : 'No ELO battles recorded';
+
     var service = buildServiceRecord(m);
     var matches = pickRecentMatches(m);
     var theatres = computeTheatreBreakdown(m);
@@ -392,7 +403,7 @@
           '<div class="stat-block">',
             '<div class="sb-cell"><div class="k">Clan Rating</div><div class="v">', PPW.formatNum(m.personalClanRating), '</div><div class="delta">Personal · all-time</div></div>',
             '<div class="sb-cell"><div class="k">Activity</div><div class="v fg">', m.activity, '</div><div class="delta">/ 100 · 30d</div></div>',
-            '<div class="sb-cell"><div class="k">Win Rate</div><div class="v win">', rateClamp, '%</div><div class="delta">Last 50 ops</div></div>',
+            '<div class="sb-cell"><div class="k">SB Win Rate</div><div class="v win">', winRateHtml, '</div><div class="delta">', winRateMeta, '</div></div>',
           '</div>',
           '<h3 class="sub">// Theatre Specialty</h3>',
           '<div class="spec-bars">',

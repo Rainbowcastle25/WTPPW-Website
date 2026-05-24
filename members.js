@@ -6,7 +6,6 @@
    ================================================================ */
 
 (function () {
-  var medals  = PPW.MEDALS;
   var apiBase = document.querySelector('meta[name="ppw-api-base"]').content;
   var apiKey  = document.querySelector('meta[name="ppw-api-key"]').content;
 
@@ -46,20 +45,6 @@
         serviceDays: m.joinedDays || m.joined_days || m.days_in_squadron || 365
       };
     });
-  }
-
-  function pickMedals(m) {
-    var picks = [];
-    var seed = m.name.length;
-    if (m.joinedDays > 1500) picks.push(medals[0]);
-    if (m.specialty && m.specialty.toLowerCase().indexOf("air") === 0) picks.push(medals[1]);
-    if (m.activity > 80) picks.push(medals[2]);
-    if (m.joinedDays > 1825) picks.push(medals[3]);
-    if ((seed + m.activity) % 3 === 0) picks.push(medals[4]);
-    if (m.roleKey === "commander" || m.roleKey === "officer") picks.push(medals[5]);
-    if (m.roleKey === "officer" || m.roleKey === "sergeant") picks.push(medals[6]);
-    if (m.specialty && m.specialty.toLowerCase() === "naval") picks.push(medals[7]);
-    return picks;
   }
 
   var roster = [];
@@ -133,7 +118,9 @@
 
   function dossierCard(m) {
     var medalsPreview = m.medals.slice(0, 3).map(function (md) {
-      return '<span class="m ' + (md.tier === "purple" ? "purple" : "") + '" title="' + md.name + '">' + md.icon + '</span>';
+      return md.icon
+        ? '<img class="m-thumb" src="' + md.icon + '" title="' + md.name + '" alt="' + md.name + '">'
+        : '<span class="m" title="' + md.name + '">★</span>';
     }).join("");
     if (m.medals.length > 3) {
       medalsPreview += '<span class="more">+' + (m.medals.length - 3) + '</span>';
@@ -187,8 +174,9 @@
   function initRoster(raw) {
     roster = normalizeRoster(raw);
     roster.forEach(function (m) {
-      m.callsign = PPW.callsign(m.name);
-      m.medals   = pickMedals(m);
+      m.callsign     = PPW.callsign(m.name);
+      m.medals       = [];
+      m._medalsLoaded = false;
     });
     rsTotal.textContent = roster.length;
     render();
@@ -214,13 +202,54 @@
   var modal        = document.getElementById("dossier-modal");
   var modalContent = document.getElementById("dossier-content");
 
+  function buildMedalHtml(medals, loading) {
+    if (loading) {
+      return '<p class="text-mute" style="font-family:var(--font-mono);font-size:0.78rem;">Loading…</p>';
+    }
+    if (!medals || !medals.length) {
+      return '<p class="text-mute" style="font-family:var(--font-mono);font-size:0.78rem;">No commendations on record.</p>';
+    }
+    return medals.map(function (md) {
+      var iconHtml = md.icon
+        ? '<img src="' + md.icon + '" alt="' + md.name + '" style="width:40px;height:40px;object-fit:contain;">'
+        : '<div class="ic">★</div>';
+      return [
+        '<div class="medal">',
+          iconHtml,
+          '<div class="nm">', md.name, '</div>',
+        '</div>'
+      ].join("");
+    }).join("");
+  }
+
   function openDossier(name) {
     var m = roster.find(function (x) { return x.name === name; });
     if (!m) return;
-    modalContent.innerHTML = renderDossier(m);
+    // Open modal immediately — medals section shows "Loading…"
+    modalContent.innerHTML = renderDossier(m, !m._medalsLoaded);
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
+
+    // Lazily fetch real WT medals; cache result on player object
+    if (!m._medalsLoaded) {
+      fetch(apiBase + "/api/member/" + encodeURIComponent(m.name), {
+        headers: { "X-API-Key": apiKey }
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          m._medalsLoaded = true;
+          m.medals = (data && Array.isArray(data.medals)) ? data.medals : [];
+          // Patch just the medal grid — avoids resetting scroll position
+          var grid = document.querySelector("#dossier-content .medal-grid");
+          if (grid) grid.innerHTML = buildMedalHtml(m.medals, false);
+        })
+        .catch(function () {
+          m._medalsLoaded = true;
+          var grid = document.querySelector("#dossier-content .medal-grid");
+          if (grid) grid.innerHTML = buildMedalHtml([], false);
+        });
+    }
   }
 
   function closeDossier() {
@@ -262,9 +291,6 @@
       events.push({ date: m.dateOfEntry, label: "Squadron Founder", desc: "Established WTPPW. Charter signed." });
     }
     events.push({ date: "2025.10", label: "SRE Season 11 completed", desc: m.activity > 70 ? "Top-tier individual contribution." : "Active participation across season." });
-    if (m.medals.length >= 4) {
-      events.push({ date: "2025.06", label: "Commendation awarded", desc: m.medals[3].name + " medal conferred." });
-    }
     events.push({ date: "2025.11", label: "Active duty", desc: "Currently deployed on regular ops." });
     return events;
   }
@@ -299,7 +325,7 @@
     ];
   }
 
-  function renderDossier(m) {
+  function renderDossier(m, medalsLoading) {
     var psn     = String(m.idx + 1).padStart(3, "0");
     var winRate = Math.round(m.activity * 0.85 + Math.random() * 5);
     var winRate2 = m.activity > 60 ? winRate : winRate - 6;
@@ -308,30 +334,12 @@
     var matches = pickRecentMatches(m);
     var theatres = computeTheatreBreakdown(m);
 
-    var medalHtml = m.medals.map(function (md) {
-      return [
-        '<div class="medal ', md.tier, '">',
-          '<div class="ic">', md.icon, '</div>',
-          '<div class="nm">', md.name, '</div>',
-          '<div class="ds">', md.desc, '</div>',
-        '</div>'
-      ].join("");
-    }).join("");
-
     var roleColour = {
       commander: "var(--gold)",
       officer: "var(--purple-2)",
       sergeant: "#6FE5C4",
       private: "var(--fg-mute)"
     }[m.roleKey];
-
-    var commendBlock = m.roleKey === "commander"
-      ? '<div class="commend">"Built this familia from zero. Most reliable wingman in the squadron — period."<span class="by">— Executive Officer, NeutralBarley33</span></div>'
-      : m.roleKey === "officer"
-      ? '<div class="commend">"Carries half the ops by themselves. Promotion was overdue."<span class="by">— Commander, Rainbowcastle25</span></div>'
-      : m.activity > 75
-      ? '<div class="commend">"Shows up. Spots the cap. Calls the flank. Exactly the pilot you want on your wing."<span class="by">— Officer, ' + (m.roleKey === "sergeant" ? "VolkovIron" : "NeutralBarley33") + '</span></div>'
-      : '<div class="commend">"Solid contributor. Continues to develop under regular ops cycle."<span class="by">— Recruitment Officer, VolkovIron</span></div>';
 
     return [
       '<button class="modal-close" data-close aria-label="Close dossier">×</button>',
@@ -383,7 +391,7 @@
         '<div>',
           '<h3 class="sub">// Commendations</h3>',
           '<div class="medal-grid">',
-            medalHtml || '<p class="text-mute" style="font-family:var(--font-mono);font-size:0.78rem;">No commendations yet.</p>',
+            buildMedalHtml(m.medals, medalsLoading),
           '</div>',
           '<h3 class="sub">// Service Record</h3>',
           '<div class="service-list">',
@@ -396,8 +404,6 @@
               ].join("");
             }).join(""),
           '</div>',
-          '<h3 class="sub mt-4" style="margin-top:2rem;">// Field Commendation</h3>',
-          commendBlock,
         '</div>',
       '</div>'
     ].join("");

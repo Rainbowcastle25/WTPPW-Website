@@ -47,7 +47,8 @@
     });
   }
 
-  var roster = [];
+  var roster   = [];
+  var eloData  = {}; // player_name (lower) → { air: matchCount, ground: matchCount }
 
   // ----- DOM
   var grid       = document.getElementById("roster-grid");
@@ -182,13 +183,40 @@
     render();
   }
 
-  // ----- load from API
-  fetch(apiBase + "/api/squadron-members", {
-    headers: { "X-API-Key": apiKey }
-  })
-    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-    .then(function (data) {
-      var raw = data.players || data.members || data || [];
+  // ----- load roster + ELO match counts in parallel
+  function fetchElo(role) {
+    return fetch(apiBase + "/api/elo-leaderboard?role=" + role + "&limit=200", {
+      headers: { "X-API-Key": apiKey }
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  Promise.all([
+    fetch(apiBase + "/api/squadron-members", { headers: { "X-API-Key": apiKey } })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }),
+    fetchElo("air"),
+    fetchElo("ground")
+  ])
+    .then(function (results) {
+      var membersData = results[0];
+      var airLb       = results[1];
+      var groundLb    = results[2];
+
+      // Build ELO lookup: name (normalised lower) → { air, ground }
+      var toPlayers = function (lb) { return (lb && (lb.players || lb.data || lb)) || []; };
+      toPlayers(airLb).forEach(function (p) {
+        var key = (p.player_name || "").toLowerCase();
+        if (!eloData[key]) eloData[key] = { air: 0, ground: 0 };
+        eloData[key].air = p.matches_played || 0;
+      });
+      toPlayers(groundLb).forEach(function (p) {
+        var key = (p.player_name || "").toLowerCase();
+        if (!eloData[key]) eloData[key] = { air: 0, ground: 0 };
+        eloData[key].ground = p.matches_played || 0;
+      });
+
+      var raw = membersData.players || membersData.members || membersData || [];
       if (!Array.isArray(raw) || !raw.length) throw new Error("empty");
       initRoster(raw);
     })
@@ -309,14 +337,23 @@
   }
 
   function computeTheatreBreakdown(m) {
-    var s = (m.specialty || "").toLowerCase();
-    var airVal = s.indexOf("ground") === 0
-      ? 100 - (65 + (m.activity % 20))
-      : 65 + (m.activity % 20);
-    var groundVal = 100 - airVal;
+    var elo   = eloData[m.name.toLowerCase()];
+    var total = elo ? (elo.air + elo.ground) : 0;
+
+    if (total > 0) {
+      // Real data from ELO match log
+      var airPct    = Math.round((elo.air    / total) * 100);
+      var groundPct = 100 - airPct;
+      return [
+        { key: "air",    label: "Air Theatre",    value: airPct,    matches: elo.air },
+        { key: "ground", label: "Ground Theatre", value: groundPct, matches: elo.ground }
+      ];
+    }
+
+    // No ELO matches recorded yet — show 50 / 50
     return [
-      { key: "air",    label: "Air Theatre",    value: airVal },
-      { key: "ground", label: "Ground Theatre", value: groundVal }
+      { key: "air",    label: "Air Theatre",    value: 50, matches: null },
+      { key: "ground", label: "Ground Theatre", value: 50, matches: null }
     ];
   }
 
@@ -360,9 +397,12 @@
           '<h3 class="sub">// Theatre Specialty</h3>',
           '<div class="spec-bars">',
             theatres.map(function (t) {
+              var countLabel = t.matches !== null
+                ? '<span class="v">' + t.value + '%</span><span class="match-count">(' + t.matches + ' battles)</span>'
+                : '<span class="v">' + t.value + '%</span><span class="match-count">(no data)</span>';
               return [
                 '<div class="spec-bar">',
-                  '<div class="l"><span>', t.label, '</span><span class="v">', t.value, '%</span></div>',
+                  '<div class="l"><span>', t.label, '</span>', countLabel, '</div>',
                   '<div class="track"><div class="fill" style="width:', t.value, '%"></div></div>',
                 '</div>'
               ].join("");
